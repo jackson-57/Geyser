@@ -45,6 +45,10 @@ public class InventoryCache {
     private Inventory openInventory;
 
     @Getter
+    @Setter
+    private int transactionId;
+
+    @Getter
     private Map<Integer, Inventory> inventories = new HashMap<Integer, Inventory>();
 
     @Getter

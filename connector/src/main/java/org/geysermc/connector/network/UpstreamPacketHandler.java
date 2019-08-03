@@ -139,4 +139,8 @@ public class UpstreamPacketHandler extends LoggingPacketHandler {
         return translateAndDefault(packet);
     }
 
+    @Override
+    public boolean handle(InventoryTransactionPacket packet) {
+        return translateAndDefault(packet);
+    }
 }

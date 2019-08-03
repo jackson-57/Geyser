@@ -52,6 +52,9 @@ public class InventoryUtils {
         InventoryTranslator translator = TranslatorsInit.getInventoryTranslators().get(inventory.getWindowType());
         translator.prepareInventory(session, inventory);
         Geyser.getGeneralThreadPool().schedule(() -> {
+            translator.openInventory(session, inventory);
+            inventory.setOpen(true);
+
             List<Packet> packets = session.getInventoryCache().getCachedPackets().get(inventory.getId());
             packets.forEach(itemPacket -> {
                 if (itemPacket != null) {
