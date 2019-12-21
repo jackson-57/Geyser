@@ -29,11 +29,9 @@ import com.github.steveice10.mc.auth.data.GameProfile;
 import com.github.steveice10.mc.auth.exception.request.RequestException;
 import com.github.steveice10.mc.protocol.MinecraftProtocol;
 import com.github.steveice10.mc.protocol.data.game.entity.player.GameMode;
+import com.github.steveice10.mc.protocol.packet.handshake.client.HandshakePacket;
 import com.github.steveice10.packetlib.Client;
-import com.github.steveice10.packetlib.event.session.ConnectedEvent;
-import com.github.steveice10.packetlib.event.session.DisconnectedEvent;
-import com.github.steveice10.packetlib.event.session.PacketReceivedEvent;
-import com.github.steveice10.packetlib.event.session.SessionAdapter;
+import com.github.steveice10.packetlib.event.session.*;
 import com.github.steveice10.packetlib.packet.Packet;
 import com.github.steveice10.packetlib.tcp.TcpSessionFactory;
 import com.nukkitx.math.vector.Vector2f;
@@ -47,6 +45,7 @@ import com.nukkitx.protocol.bedrock.data.GameRule;
 import com.nukkitx.protocol.bedrock.packet.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.geysermc.api.AuthType;
 import org.geysermc.api.Player;
 import org.geysermc.api.RemoteServer;
 import org.geysermc.api.session.AuthData;
@@ -54,22 +53,30 @@ import org.geysermc.api.window.FormWindow;
 import org.geysermc.connector.GeyserConnector;
 import org.geysermc.connector.entity.PlayerEntity;
 import org.geysermc.connector.inventory.PlayerInventory;
+import org.geysermc.connector.network.session.auth.BedrockClientData;
 import org.geysermc.connector.network.session.cache.*;
 import org.geysermc.connector.network.translators.Registry;
 import org.geysermc.connector.network.translators.TranslatorsInit;
 import org.geysermc.connector.utils.Toolbox;
+import org.geysermc.floodgate.util.BedrockData;
+import org.geysermc.floodgate.util.EncryptionUtil;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
 import java.util.UUID;
 
 @Getter
 public class GeyserSession implements Player {
-
     private final GeyserConnector connector;
     private final UpstreamSession upstream;
     private RemoteServer remoteServer;
     private Client downstream;
-    private AuthData authenticationData;
+    @Setter private AuthData authenticationData;
+    @Setter private BedrockClientData clientData;
 
     private PlayerEntity playerEntity;
     private PlayerInventory inventory;
@@ -121,8 +128,13 @@ public class GeyserSession implements Player {
     public void connect(RemoteServer remoteServer) {
         startGame();
         this.remoteServer = remoteServer;
-        if (!(connector.getConfig().getRemote().getAuthType().hashCode() == "online".hashCode())) {
-            connector.getLogger().info("Attempting to login using offline mode... authentication is disabled.");
+        if (connector.getAuthType() != AuthType.ONLINE) {
+            connector.getLogger().info(
+                    "Attempting to login using " + connector.getAuthType().name().toLowerCase() + " mode... " +
+                    (connector.getAuthType() == AuthType.OFFLINE ?
+                            "authentication is disabled." : "authentication will be encrypted"
+                    )
+            );
             authenticate(authenticationData.getName());
         }
 
@@ -175,8 +187,56 @@ public class GeyserSession implements Player {
                     protocol = new MinecraftProtocol(username);
                 }
 
+                boolean floodgate = connector.getAuthType() == AuthType.FLOODGATE;
+                final PublicKey publicKey;
+
+                if (floodgate) {
+                    PublicKey key = null;
+                    try {
+                        key = EncryptionUtil.getKeyFromFile(
+                                Paths.get(connector.getConfig().getFloodgateKeyFile()),
+                                PublicKey.class
+                        );
+                    } catch (IOException | InvalidKeySpecException | NoSuchAlgorithmException e) {
+                        connector.getLogger().error("Error while reading Floodgate key file", e);
+                    }
+                    publicKey = key;
+                } else publicKey = null;
+
+                if (publicKey != null) {
+                    connector.getLogger().info("Loaded Floodgate key!");
+                }
+
                 downstream = new Client(remoteServer.getAddress(), remoteServer.getPort(), protocol, new TcpSessionFactory());
                 downstream.getSession().addListener(new SessionAdapter() {
+                    @Override
+                    public void packetSending(PacketSendingEvent event) {
+                        //todo move this somewhere else
+                        if (event.getPacket() instanceof HandshakePacket && floodgate) {
+                            String encrypted = "";
+                            try {
+                                encrypted = EncryptionUtil.encryptBedrockData(publicKey, new BedrockData(
+                                        clientData.getGameVersion(),
+                                        authenticationData.getName(),
+                                        authenticationData.getXboxUUID(),
+                                        clientData.getDeviceOS().ordinal(),
+                                        clientData.getLanguageCode(),
+                                        clientData.getCurrentInputMode().ordinal(),
+                                        upstream.getSession().getAddress().getAddress().getHostAddress()
+                                ));
+                            } catch (Exception e) {
+                                connector.getLogger().error("Failed to encrypt message", e);
+                            }
+
+                            HandshakePacket handshakePacket = event.getPacket();
+                            event.setPacket(new HandshakePacket(
+                                    handshakePacket.getProtocolVersion(),
+                                    handshakePacket.getHostname() + '\0' + BedrockData.FLOODGATE_IDENTIFIER + '\0' + encrypted,
+                                    handshakePacket.getPort(),
+                                    handshakePacket.getIntent()
+                            ));
+                        }
+                    }
 
                     @Override
                     public void connected(ConnectedEvent event) {
@@ -225,16 +285,8 @@ public class GeyserSession implements Player {
         closed = true;
     }
 
-    public boolean isClosed() {
-        return closed;
-    }
-
     public void close() {
         disconnect("Server closed.");
-    }
-
-    public void setAuthenticationData(AuthData authData) {
-        authenticationData = authData;
     }
 
     @Override
