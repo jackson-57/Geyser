@@ -25,24 +25,34 @@
 
 package org.geysermc.connector.network.translators.inventory;
 
+import com.nukkitx.protocol.bedrock.data.ContainerId;
+import com.nukkitx.protocol.bedrock.data.ContainerType;
 import com.nukkitx.protocol.bedrock.data.InventoryAction;
-import org.geysermc.connector.inventory.Inventory;
-import org.geysermc.connector.network.session.GeyserSession;
 
-public abstract class InventoryTranslator {
-    public final int size;
-
-    InventoryTranslator(int size) {
-        this.size = size;
+public class AnvilInventoryTranslator extends BlockInventoryTranslator {
+    public AnvilInventoryTranslator() {
+        super(3, 145 << 4, ContainerType.ANVIL);
     }
 
-    public abstract void prepareInventory(GeyserSession session, Inventory inventory);
-    public abstract void openInventory(GeyserSession session, Inventory inventory);
-    public abstract void closeInventory(GeyserSession session, Inventory inventory);
-    public abstract void updateProperty(GeyserSession session, Inventory inventory, int key, int value);
-    public abstract void updateInventory(GeyserSession session, Inventory inventory);
-    public abstract void updateSlot(GeyserSession session, Inventory inventory, int slot);
-    public abstract int bedrockSlotToJava(InventoryAction action);
-    public abstract int javaSlotToBedrock(int slot);
-    public abstract SlotType getSlotType(int javaSlot);
+    @Override
+    public int bedrockSlotToJava(InventoryAction action) {
+        if (action.getSource().getContainerId() == ContainerId.CURSOR) {
+            switch (action.getSlot()) {
+                case 1:
+                    return 0;
+                case 2:
+                    return 1;
+                case 50:
+                    return 2;
+            }
+        }
+        return super.bedrockSlotToJava(action);
+    }
+
+    @Override
+    public SlotType getSlotType(int javaSlot) {
+        if (javaSlot == 2)
+            return SlotType.OUTPUT;
+        return SlotType.NORMAL;
+    }
 }

@@ -13,8 +13,8 @@ import org.geysermc.connector.world.GlobalBlockPalette;
 public class JavaBlockChangeTranslator extends PacketTranslator<ServerBlockChangePacket> {
     @Override
     public void translate(ServerBlockChangePacket packet, GeyserSession session) {
-        UpdateBlockPacket updateBlockPacket = new UpdateBlockPacket();
         BlockChangeRecord record = packet.getRecord();
+        UpdateBlockPacket updateBlockPacket = new UpdateBlockPacket();
         updateBlockPacket.setDataLayer(0);
         updateBlockPacket.setBlockPosition(Vector3i.from(
                 record.getPosition().getX(),

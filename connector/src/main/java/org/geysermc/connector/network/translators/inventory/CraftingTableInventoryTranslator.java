@@ -25,50 +25,55 @@
 
 package org.geysermc.connector.network.translators.inventory;
 
-import com.nukkitx.math.vector.Vector3i;
-import com.nukkitx.protocol.bedrock.data.ItemData;
+import com.nukkitx.protocol.bedrock.data.ContainerId;
+import com.nukkitx.protocol.bedrock.data.ContainerType;
+import com.nukkitx.protocol.bedrock.data.InventoryAction;
 import com.nukkitx.protocol.bedrock.packet.ContainerOpenPacket;
-import com.nukkitx.protocol.bedrock.packet.InventoryContentPacket;
-import com.nukkitx.protocol.bedrock.packet.InventorySlotPacket;
 import org.geysermc.connector.inventory.Inventory;
 import org.geysermc.connector.network.session.GeyserSession;
-import org.geysermc.connector.network.translators.TranslatorsInit;
 
-public class GenericInventoryTranslator extends InventoryTranslator {
+public class CraftingTableInventoryTranslator extends ContainerInventoryTranslator {
+    public CraftingTableInventoryTranslator() {
+        super(10);
+    }
 
     @Override
     public void prepareInventory(GeyserSession session, Inventory inventory) {
-        // TODO: Add code here
+
     }
 
     @Override
     public void openInventory(GeyserSession session, Inventory inventory) {
         ContainerOpenPacket containerOpenPacket = new ContainerOpenPacket();
         containerOpenPacket.setWindowId((byte) inventory.getId());
-        containerOpenPacket.setType((byte) 0);
-        containerOpenPacket.setBlockPosition(Vector3i.ZERO);
+        containerOpenPacket.setType((byte) ContainerType.WORKBENCH.id());
+        containerOpenPacket.setBlockPosition(inventory.getHolderPosition());
+        containerOpenPacket.setUniqueEntityId(inventory.getHolderId());
         session.getUpstream().sendPacket(containerOpenPacket);
     }
 
     @Override
-    public void updateInventory(GeyserSession session, Inventory inventory) {
-        ItemData[] bedrockItems = new ItemData[inventory.getItems().length];
-        for (int i = 0; i < bedrockItems.length; i++) {
-            bedrockItems[i] = TranslatorsInit.getItemTranslator().translateToBedrock(inventory.getItems()[i]);
-        }
+    public void closeInventory(GeyserSession session, Inventory inventory) {
 
-        InventoryContentPacket contentPacket = new InventoryContentPacket();
-        contentPacket.setContainerId(inventory.getId());
-        contentPacket.setContents(bedrockItems);
-        session.getUpstream().sendPacket(contentPacket);
     }
 
     @Override
-    public void updateSlot(GeyserSession session, Inventory inventory, int slot) {
-        InventorySlotPacket slotPacket = new InventorySlotPacket();
-        slotPacket.setContainerId(inventory.getId());
-        slotPacket.setSlot(TranslatorsInit.getItemTranslator().translateToBedrock(inventory.getItems()[slot]));
-        slotPacket.setInventorySlot(slot);
-        session.getUpstream().sendPacket(slotPacket);
+    public int bedrockSlotToJava(InventoryAction action) {
+        if (action.getSource().getContainerId() == ContainerId.CURSOR) {
+            int slotnum = action.getSlot();
+            if (slotnum >= 32 && 42 >= slotnum) {
+                return slotnum - 31;
+            } else if (slotnum == 50) {
+                return 0;
+            }
+        }
+        return super.bedrockSlotToJava(action);
+    }
+
+    @Override
+    public SlotType getSlotType(int javaSlot) {
+        if (javaSlot == 0)
+            return SlotType.OUTPUT;
+        return SlotType.NORMAL;
     }
 }
