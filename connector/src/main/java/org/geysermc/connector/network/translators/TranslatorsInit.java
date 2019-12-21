@@ -49,8 +49,6 @@ import org.geysermc.connector.network.translators.block.entity.BlockEntityTransl
 import org.geysermc.connector.network.translators.block.entity.EmptyBlockEntityTranslator;
 import org.geysermc.connector.network.translators.block.entity.SignBlockEntityTranslator;
 import org.geysermc.connector.network.translators.inventory.*;
-import org.geysermc.connector.network.translators.inventory.GenericInventoryTranslator;
-import org.geysermc.connector.network.translators.inventory.InventoryTranslator;
 import org.geysermc.connector.network.translators.item.ItemTranslator;
 import org.geysermc.connector.network.translators.java.*;
 import org.geysermc.connector.network.translators.java.entity.*;
