@@ -23,29 +23,27 @@
  * @link https://github.com/GeyserMC/Geyser
  */
 
-package org.geysermc.connector.network.translators.java.world;
+package org.geysermc.connector.entity.living.horse;
 
-import com.github.steveice10.mc.protocol.packet.ingame.server.world.ServerUpdateTileEntityPacket;
-import com.nukkitx.math.vector.Vector3i;
-import com.nukkitx.protocol.bedrock.packet.BlockEntityDataPacket;
+import com.github.steveice10.mc.protocol.data.game.entity.metadata.EntityMetadata;
+import com.nukkitx.math.vector.Vector3f;
+import com.nukkitx.protocol.bedrock.data.EntityData;
+import org.geysermc.connector.entity.living.AbstractHorseEntity;
+import org.geysermc.connector.entity.type.EntityType;
 import org.geysermc.connector.network.session.GeyserSession;
-import org.geysermc.connector.network.translators.PacketTranslator;
-import org.geysermc.connector.network.translators.block.entity.BlockEntityTranslator;
-import org.geysermc.connector.utils.BlockEntityUtils;
 
-public class JavaUpdateTileEntityTranslator extends PacketTranslator<ServerUpdateTileEntityPacket> {
+public class HorseEntity extends AbstractHorseEntity {
+
+    public HorseEntity(long entityId, long geyserId, EntityType entityType, Vector3f position, Vector3f motion, Vector3f rotation) {
+        super(entityId, geyserId, entityType, position, motion, rotation);
+    }
 
     @Override
-    public void translate(ServerUpdateTileEntityPacket packet, GeyserSession session) {
-        BlockEntityDataPacket blockEntityPacket = new BlockEntityDataPacket();
-        blockEntityPacket.setBlockPosition(Vector3i.from(packet.getPosition().getX(),
-                packet.getPosition().getY(),
-                packet.getPosition().getZ())
-        );
+    public void updateBedrockMetadata(EntityMetadata entityMetadata, GeyserSession session) {
+        if (entityMetadata.getId() == 18) {
+            metadata.put(EntityData.VARIANT, (int) entityMetadata.getValue());
+        }
 
-        String id = BlockEntityUtils.getBedrockBlockEntityId(packet.getType().name());
-        BlockEntityTranslator translator = BlockEntityUtils.getBlockEntityTranslator(id);
-        blockEntityPacket.setData(translator.getBlockEntityTag(packet.getNbt(), id));
-        session.getUpstream().sendPacket(blockEntityPacket);
+        super.updateBedrockMetadata(entityMetadata, session);
     }
 }
