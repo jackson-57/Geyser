@@ -13,7 +13,6 @@ import org.geysermc.connector.GeyserConnector;
 import org.geysermc.connector.entity.PlayerEntity;
 import org.geysermc.connector.network.session.GeyserSession;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.UUID;
@@ -81,7 +80,7 @@ public class SkinUtils {
             try {
                 GameProfile.Property skinProperty = profile.getProperty("textures");
 
-                JsonObject skinObject = SkinProvider.GSON.fromJson(new String(Base64.getDecoder().decode(skinProperty.getValue()), StandardCharsets.UTF_8), JsonObject.class);
+                JsonObject skinObject = SkinProvider.GSON.fromJson(new String(Base64.getDecoder().decode(skinProperty.getValue()), Charsets.UTF_8), JsonObject.class);
                 JsonObject textures = skinObject.getAsJsonObject("textures");
 
                 JsonObject skinTexture = textures.getAsJsonObject("SKIN");

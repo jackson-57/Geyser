@@ -23,27 +23,28 @@
  * @link https://github.com/GeyserMC/Geyser
  */
 
-package org.geysermc.connector.entity.living.horse;
+package org.geysermc.connector.network.translators.block.entity;
 
-import com.github.steveice10.mc.protocol.data.game.entity.metadata.EntityMetadata;
-import com.nukkitx.math.vector.Vector3f;
-import com.nukkitx.protocol.bedrock.data.EntityData;
-import org.geysermc.connector.entity.living.AbstractHorseEntity;
-import org.geysermc.connector.entity.type.EntityType;
-import org.geysermc.connector.network.session.GeyserSession;
+import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
+import com.nukkitx.nbt.tag.Tag;
 
-public class HorseEntity extends AbstractHorseEntity {
+import java.util.ArrayList;
+import java.util.List;
 
-    public HorseEntity(long entityId, long geyserId, EntityType entityType, Vector3f position, Vector3f motion, Vector3f rotation) {
-        super(entityId, geyserId, entityType, position, motion, rotation);
+public class EmptyBlockEntityTranslator extends BlockEntityTranslator {
+
+    @Override
+    public List<Tag<?>> translateTag(CompoundTag tag) {
+        return new ArrayList<>();
     }
 
     @Override
-    public void updateBedrockMetadata(EntityMetadata entityMetadata, GeyserSession session) {
-        if (entityMetadata.getId() == 18) {
-            metadata.put(EntityData.VARIANT, (int) entityMetadata.getValue());
-        }
+    public CompoundTag getDefaultJavaTag(int x, int y, int z) {
+        return getConstantJavaTag("empty", x, y, z);
+    }
 
-        super.updateBedrockMetadata(entityMetadata, session);
+    @Override
+    public com.nukkitx.nbt.tag.CompoundTag getDefaultBedrockTag(int x, int y, int z) {
+        return getConstantBedrockTag("Empty", x, y, z);
     }
 }
