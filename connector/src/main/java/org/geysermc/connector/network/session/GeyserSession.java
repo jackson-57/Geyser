@@ -104,8 +104,10 @@ public class GeyserSession implements CommandSender {
     @Setter
     private boolean switchingDimension = false;
     private boolean manyDimPackets = false;
-    private int craftSlot = 0;
     private ServerRespawnPacket lastDimPacket = null;
+	
+    @Setter
+	private int craftSlot = 0;
 
     public GeyserSession(GeyserConnector connector, BedrockServerSession bedrockServerSession) {
         this.connector = connector;
