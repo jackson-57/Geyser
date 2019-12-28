@@ -4,6 +4,7 @@ import com.nukkitx.network.VarInts;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
+import org.geysermc.connector.world.GlobalBlockPalette;
 import org.geysermc.connector.world.chunk.bitarray.BitArray;
 import org.geysermc.connector.world.chunk.bitarray.BitArrayVersion;
 
@@ -43,11 +44,11 @@ public class BlockStorage {
     }
 
     public synchronized int getFullBlock(int index) {
-        return this.palette.getInt(this.bitArray.get(index));
+        return this.legacyIdFor(this.bitArray.get(index));
     }
 
-    public synchronized void setFullBlock(int index, int runtimeId) {
-        int idx = this.idFor(runtimeId);
+    public synchronized void setFullBlock(int index, int legacyId) {
+        int idx = this.idFor(legacyId);
         this.bitArray.set(index, idx);
     }
 
@@ -71,7 +72,8 @@ public class BlockStorage {
         this.bitArray = newBitArray;
     }
 
-    private int idFor(int runtimeId) {
+    private int idFor(int legacyId) {
+        int runtimeId = GlobalBlockPalette.getOrCreateRuntimeId(legacyId);
         int index = this.palette.indexOf(runtimeId);
         if (index != -1) {
             return index;
@@ -87,6 +89,11 @@ public class BlockStorage {
             }
         }
         return index;
+    }
+
+    private int legacyIdFor(int index) {
+        int runtimeId = this.palette.get(index);
+        return GlobalBlockPalette.getLegacyId(runtimeId);
     }
 
     public boolean isEmpty() {

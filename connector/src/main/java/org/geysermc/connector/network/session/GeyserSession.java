@@ -316,7 +316,7 @@ public class GeyserSession implements CommandSender {
         startGamePacket.setMultiplayerCorrelationId("");
         startGamePacket.setBlockPalette(Toolbox.BLOCKS);
         startGamePacket.setItemEntries(Toolbox.ITEMS);
-        startGamePacket.setVanillaVersion("*");
+        startGamePacket.setVanillaVersion(GeyserConnector.BEDROCK_PACKET_CODEC.getMinecraftVersion());
         // startGamePacket.setMovementServerAuthoritative(true);
         upstream.sendPacket(startGamePacket);
     }
