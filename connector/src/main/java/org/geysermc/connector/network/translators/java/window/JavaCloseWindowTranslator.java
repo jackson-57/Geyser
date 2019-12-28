@@ -23,26 +23,21 @@
  * @link https://github.com/GeyserMC/Geyser
  */
 
-package org.geysermc.connector.network.translators.inventory;
+package org.geysermc.connector.network.translators.java.window;
 
-import com.nukkitx.protocol.bedrock.data.InventoryAction;
-import org.geysermc.connector.inventory.Inventory;
+import com.github.steveice10.mc.protocol.packet.ingame.server.window.ServerCloseWindowPacket;
+import com.nukkitx.protocol.bedrock.packet.ContainerClosePacket;
 import org.geysermc.connector.network.session.GeyserSession;
+import org.geysermc.connector.network.translators.PacketTranslator;
+import org.geysermc.connector.utils.InventoryUtils;
 
-public abstract class InventoryTranslator {
-    public final int size;
+public class JavaCloseWindowTranslator extends PacketTranslator<ServerCloseWindowPacket> {
 
-    InventoryTranslator(int size) {
-        this.size = size;
+    @Override
+    public void translate(ServerCloseWindowPacket packet, GeyserSession session) {
+        ContainerClosePacket closePacket = new ContainerClosePacket();
+        closePacket.setWindowId((byte)packet.getWindowId());
+        session.getUpstream().sendPacket(closePacket);
+        InventoryUtils.closeInventory(session, packet.getWindowId());
     }
-
-    public abstract void prepareInventory(GeyserSession session, Inventory inventory);
-    public abstract void openInventory(GeyserSession session, Inventory inventory);
-    public abstract void closeInventory(GeyserSession session, Inventory inventory);
-    public abstract void updateProperty(GeyserSession session, Inventory inventory, int key, int value);
-    public abstract void updateInventory(GeyserSession session, Inventory inventory);
-    public abstract void updateSlot(GeyserSession session, Inventory inventory, int slot);
-    public abstract int bedrockSlotToJava(InventoryAction action);
-    public abstract int javaSlotToBedrock(int slot);
-    public abstract SlotType getSlotType(int javaSlot);
 }

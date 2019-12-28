@@ -25,50 +25,38 @@
 
 package org.geysermc.connector.network.translators.inventory;
 
-import com.nukkitx.math.vector.Vector3i;
+import com.nukkitx.protocol.bedrock.data.ContainerType;
 import com.nukkitx.protocol.bedrock.data.ItemData;
-import com.nukkitx.protocol.bedrock.packet.ContainerOpenPacket;
-import com.nukkitx.protocol.bedrock.packet.InventoryContentPacket;
-import com.nukkitx.protocol.bedrock.packet.InventorySlotPacket;
+import com.nukkitx.protocol.bedrock.packet.*;
 import org.geysermc.connector.inventory.Inventory;
 import org.geysermc.connector.network.session.GeyserSession;
 import org.geysermc.connector.network.translators.TranslatorsInit;
 
-public class GenericInventoryTranslator extends InventoryTranslator {
-
-    @Override
-    public void prepareInventory(GeyserSession session, Inventory inventory) {
-        // TODO: Add code here
-    }
-
-    @Override
-    public void openInventory(GeyserSession session, Inventory inventory) {
-        ContainerOpenPacket containerOpenPacket = new ContainerOpenPacket();
-        containerOpenPacket.setWindowId((byte) inventory.getId());
-        containerOpenPacket.setType((byte) 0);
-        containerOpenPacket.setBlockPosition(Vector3i.ZERO);
-        session.getUpstream().sendPacket(containerOpenPacket);
+public class SingleChestInventoryTranslator extends BlockInventoryTranslator {
+    public SingleChestInventoryTranslator(int size) {
+        super(size, "minecraft:chest[facing=north,type=single,waterlogged=false]", ContainerType.CONTAINER);
     }
 
     @Override
     public void updateInventory(GeyserSession session, Inventory inventory) {
-        ItemData[] bedrockItems = new ItemData[inventory.getItems().length];
+        //need to pad empty slots for 1x9 and 2x9
+        ItemData[] bedrockItems = new ItemData[27];
         for (int i = 0; i < bedrockItems.length; i++) {
-            bedrockItems[i] = TranslatorsInit.getItemTranslator().translateToBedrock(inventory.getItems()[i]);
+            if (i <= this.size) {
+                bedrockItems[i] = TranslatorsInit.getItemTranslator().translateToBedrock(inventory.getItem(i));
+            } else {
+                bedrockItems[i] = ItemData.AIR;
+            }
         }
-
         InventoryContentPacket contentPacket = new InventoryContentPacket();
         contentPacket.setContainerId(inventory.getId());
         contentPacket.setContents(bedrockItems);
         session.getUpstream().sendPacket(contentPacket);
-    }
 
-    @Override
-    public void updateSlot(GeyserSession session, Inventory inventory, int slot) {
-        InventorySlotPacket slotPacket = new InventorySlotPacket();
-        slotPacket.setContainerId(inventory.getId());
-        slotPacket.setSlot(TranslatorsInit.getItemTranslator().translateToBedrock(inventory.getItems()[slot]));
-        slotPacket.setInventorySlot(slot);
-        session.getUpstream().sendPacket(slotPacket);
+        Inventory playerInventory = session.getInventory();
+        for (int i = 0; i < 36; i++) {
+            playerInventory.setItem(i + 9, inventory.getItem(i + this.size));
+        }
+        TranslatorsInit.getInventoryTranslators().get(playerInventory.getWindowType()).updateInventory(session, playerInventory);
     }
 }

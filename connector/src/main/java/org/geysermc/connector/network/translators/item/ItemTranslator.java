@@ -58,6 +58,17 @@ public class ItemTranslator {
 
         if (data.getTag() == null) {
             return new ItemStack(javaItem.getJavaId(), data.getCount());
+        } else if (javaItem.getJavaIdentifier().equals("minecraft:enchanted_book")) {
+            CompoundTag javaTag = translateToJavaNBT(data.getTag());
+            Map<String, Tag> javaValue = javaTag.getValue();
+            Tag enchTag = javaValue.get("Enchantments");
+            if (enchTag instanceof ListTag) {
+                enchTag = new ListTag("StoredEnchantments", ((ListTag) enchTag).getValue());
+                javaValue.remove("Enchantments");
+                javaValue.put("StoredEnchantments", enchTag);
+                javaTag.setValue(javaValue);
+            }
+            return new ItemStack(javaItem.getJavaId(), data.getCount(), javaTag);
         }
         return new ItemStack(javaItem.getJavaId(), data.getCount(), translateToJavaNBT(data.getTag()));
     }
@@ -71,6 +82,15 @@ public class ItemTranslator {
         ItemEntry bedrockItem = getItem(stack);
         if (stack.getNbt() == null) {
            return ItemData.of(bedrockItem.getBedrockId(), (short) bedrockItem.getBedrockData(), stack.getAmount());
+        } else if (bedrockItem.getJavaIdentifier().endsWith("potion")) {
+            Tag potionTag = stack.getNbt().get("Potion");
+            if (potionTag instanceof StringTag) {
+                Potion potion = Potion.getByJavaIdentifier(((StringTag) potionTag).getValue());
+                if (potion != null) {
+                    return ItemData.of(bedrockItem.getBedrockId(), potion.getBedrockId(), stack.getAmount(), translateToBedrockNBT(stack.getNbt()));
+                }
+                Geyser.getLogger().debug("Unknown java potion: " + potionTag.getValue());
+            }
         }
         return ItemData.of(bedrockItem.getBedrockId(), (short) bedrockItem.getBedrockData(), stack.getAmount(), translateToBedrockNBT(stack.getNbt()));
     }
@@ -81,7 +101,7 @@ public class ItemTranslator {
 
     public ItemEntry getItem(ItemData data) {
         for (ItemEntry itemEntry : Toolbox.ITEM_ENTRIES.values()) {
-            if (itemEntry.getBedrockId() == data.getId() && itemEntry.getBedrockData() == data.getDamage()) {
+            if (itemEntry.getBedrockId() == data.getId() && (itemEntry.getBedrockData() == data.getDamage() || itemEntry.getJavaIdentifier().endsWith("potion"))) {
                 return itemEntry;
             }
         }
@@ -100,10 +120,11 @@ public class ItemTranslator {
                 if (translatedTag == null)
                     continue;
 
-                javaValue.put(str, translatedTag);
+                javaValue.put(translatedTag.getName(), translatedTag);
             }
         }
 
+        javaTag.setValue(javaValue);
         return javaTag;
     }
 
@@ -162,6 +183,29 @@ public class ItemTranslator {
             com.nukkitx.nbt.tag.ListTag listTag = (com.nukkitx.nbt.tag.ListTag) tag;
 
             List<Tag> tags = new ArrayList<>();
+
+            if (tag.getName().equals("ench")) {
+                for (Object value : listTag.getValue()) {
+                    if (!(value instanceof com.nukkitx.nbt.tag.CompoundTag))
+                        continue;
+
+                    com.nukkitx.nbt.tag.CompoundTag tagValue = (com.nukkitx.nbt.tag.CompoundTag) value;
+                    int bedrockId = tagValue.getAsShort("id", (short) -1);
+                    Enchantment enchantment = Enchantment.getByBedrockId(bedrockId);
+                    if (enchantment != null) {
+                        CompoundTag javaTag = new CompoundTag("");
+                        Map<String, Tag> javaValue = javaTag.getValue();
+                        javaValue.put("id", new StringTag("id", enchantment.getJavaIdentifier()));
+                        javaValue.put("lvl", new IntTag("lvl", tagValue.getAsShort("lvl", (short) 1)));
+                        javaTag.setValue(javaValue);
+                        tags.add(javaTag);
+                    } else {
+                        Geyser.getLogger().debug("Unknown bedrock enchantment: " + bedrockId);
+                    }
+                }
+                return new ListTag("Enchantments", tags);
+            }
+
             for (Object value : listTag.getValue()) {
                 if (!(value instanceof com.nukkitx.nbt.tag.Tag))
                     continue;
@@ -190,7 +234,7 @@ public class ItemTranslator {
                 if (translatedTag == null)
                     continue;
 
-                javaValue.put(str, translatedTag);
+                javaValue.put(translatedTag.getName(), translatedTag);
             }
         }
 
@@ -251,7 +295,33 @@ public class ItemTranslator {
 
         if (tag instanceof ListTag) {
             ListTag listTag = (ListTag) tag;
-            if (listTag.getName().equalsIgnoreCase("Lore")) {
+            if (listTag.getName().equalsIgnoreCase("Enchantments") || listTag.getName().equalsIgnoreCase("StoredEnchantments")) {
+                List<com.nukkitx.nbt.tag.CompoundTag> tags = new ArrayList<>();
+                for (Object value : listTag.getValue()) {
+                    if (!(value instanceof CompoundTag))
+                        continue;
+
+                    Tag javaEnchLvl = ((CompoundTag) value).get("lvl");
+                    if (!(javaEnchLvl instanceof ShortTag))
+                        continue;
+
+                    Tag javaEnchId = ((CompoundTag) value).get("id");
+                    if (!(javaEnchId instanceof StringTag))
+                        continue;
+
+                    Enchantment enchantment = Enchantment.getByJavaIdentifier(((StringTag) javaEnchId).getValue());
+                    if (enchantment == null) {
+                        Geyser.getLogger().debug("Unknown java enchantment: " + javaEnchId.getValue());
+                        continue;
+                    }
+
+                    com.nukkitx.nbt.CompoundTagBuilder builder = com.nukkitx.nbt.tag.CompoundTag.EMPTY.toBuilder();
+                    builder.shortTag("lvl", ((ShortTag) javaEnchLvl).getValue());
+                    builder.shortTag("id", (short) enchantment.ordinal());
+                    tags.add(builder.buildRootTag());
+                }
+                return new com.nukkitx.nbt.tag.ListTag<>("ench", com.nukkitx.nbt.tag.CompoundTag.class, tags);
+            } else if (listTag.getName().equalsIgnoreCase("Lore")) {
                 List<com.nukkitx.nbt.tag.StringTag> tags = new ArrayList<>();
                 for (Object value : listTag.getValue()) {
                     if (!(value instanceof Tag))

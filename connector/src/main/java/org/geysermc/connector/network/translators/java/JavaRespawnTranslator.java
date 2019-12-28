@@ -44,6 +44,8 @@ public class JavaRespawnTranslator extends PacketTranslator<ServerRespawnPacket>
         if (entity.getDimension() == getDimension(packet.getDimension()))
             return;
 
+        session.getInventoryCache().setOpenInventory(null);
+        session.getChunkCache().getChunks().clear();
         entity.setDimension(getDimension(packet.getDimension()));
 
         ChangeDimensionPacket changeDimensionPacket = new ChangeDimensionPacket();
