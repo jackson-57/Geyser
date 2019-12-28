@@ -60,8 +60,7 @@ import org.geysermc.connector.network.remote.RemoteServer;
 import org.geysermc.connector.network.session.auth.AuthData;
 import org.geysermc.connector.network.session.cache.*;
 import org.geysermc.connector.network.translators.Registry;
-import org.geysermc.connector.network.translators.TranslatorsInit;
-import org.geysermc.connector.utils.DimensionUtils;
+import org.geysermc.connector.utils.ChunkUtils;
 import org.geysermc.connector.utils.Toolbox;
 
 import java.net.InetSocketAddress;
@@ -103,11 +102,9 @@ public class GeyserSession implements CommandSender {
     private GameMode gameMode = GameMode.SURVIVAL;
 
     @Setter
+    private boolean switchingDimension = false;
+    private boolean manyDimPackets = false;
     private int craftSlot = 0;
-
-    @Setter
-    private volatile boolean switchingDim = false;
-    private final Object dimensionLock = new Object();
     private ServerRespawnPacket lastDimPacket = null;
 
     public GeyserSession(GeyserConnector connector, BedrockServerSession bedrockServerSession) {
@@ -139,20 +136,7 @@ public class GeyserSession implements CommandSender {
             authenticate(authData.getName());
         }
 
-        Vector3f pos = Vector3f.ZERO;
-        int chunkX = pos.getFloorX() >> 4;
-        int chunkZ = pos.getFloorZ() >> 4;
-        NetworkChunkPublisherUpdatePacket chunkPublisherUpdatePacket = new NetworkChunkPublisherUpdatePacket();
-        chunkPublisherUpdatePacket.setPosition(pos.toInt());
-        chunkPublisherUpdatePacket.setRadius(renderDistance << 4);
-        upstream.sendPacket(chunkPublisherUpdatePacket);
-
-        LevelChunkPacket data = new LevelChunkPacket();
-        data.setChunkX(chunkX);
-        data.setChunkZ(chunkZ);
-        data.setSubChunksLength(0);
-        data.setData(TranslatorsInit.EMPTY_LEVEL_CHUNK_DATA);
-        upstream.sendPacket(data);
+        ChunkUtils.sendEmptyChunks(this, playerEntity.getPosition().toInt(), 5);
 
         BiomeDefinitionListPacket biomePacket = new BiomeDefinitionListPacket();
         biomePacket.setTag(CompoundTag.EMPTY);
@@ -218,9 +202,7 @@ public class GeyserSession implements CommandSender {
                         if (!closed) {
                             //handle consecutive respawn packets
                             if (event.getPacket().getClass().equals(ServerRespawnPacket.class)) {
-                                if (lastDimPacket != null) {
-                                    DimensionUtils.switchDimension(GeyserSession.this, lastDimPacket.getDimension(), true);
-                                }
+                                manyDimPackets = lastDimPacket != null;
                                 lastDimPacket = event.getPacket();
                                 return;
                             } else if (lastDimPacket != null) {

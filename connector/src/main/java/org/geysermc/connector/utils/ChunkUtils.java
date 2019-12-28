@@ -2,10 +2,13 @@ package org.geysermc.connector.utils;
 
 import com.github.steveice10.mc.protocol.data.game.chunk.Chunk;
 import com.github.steveice10.mc.protocol.data.game.chunk.Column;
+import com.github.steveice10.mc.protocol.data.game.entity.metadata.Position;
 import com.github.steveice10.mc.protocol.data.game.world.block.BlockState;
 import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
 import com.github.steveice10.opennbt.tag.builtin.Tag;
 import com.nukkitx.math.vector.Vector3i;
+import com.nukkitx.protocol.bedrock.packet.LevelChunkPacket;
+import com.nukkitx.protocol.bedrock.packet.NetworkChunkPublisherUpdatePacket;
 import com.nukkitx.protocol.bedrock.packet.UpdateBlockPacket;
 import org.geysermc.connector.network.session.GeyserSession;
 import org.geysermc.connector.network.translators.TranslatorsInit;
@@ -69,6 +72,27 @@ public class ChunkUtils {
 
         chunkData.blockEntities = bedrockBlockEntities;
         return chunkData;
+    }
+
+    public static void sendEmptyChunks(GeyserSession session, Vector3i position, int radius) {
+        int chunkX = position.getX() >> 4;
+        int chunkZ = position.getZ() >> 4;
+        NetworkChunkPublisherUpdatePacket chunkPublisherUpdatePacket = new NetworkChunkPublisherUpdatePacket();
+        chunkPublisherUpdatePacket.setPosition(position);
+        chunkPublisherUpdatePacket.setRadius(radius << 4);
+        session.getUpstream().sendPacket(chunkPublisherUpdatePacket);
+        session.setLastChunkPosition(null);
+        for (int x = -radius; x < radius; x++) {
+            for (int z = -radius; z < radius; z++) {
+                LevelChunkPacket data = new LevelChunkPacket();
+                data.setChunkX(chunkX + x);
+                data.setChunkZ(chunkZ + z);
+                data.setSubChunksLength(0);
+                data.setData(TranslatorsInit.EMPTY_LEVEL_CHUNK_DATA);
+                data.setCachingEnabled(false);
+                session.getUpstream().sendPacket(data);
+            }
+        }
     }
 
     public static final class ChunkData {
