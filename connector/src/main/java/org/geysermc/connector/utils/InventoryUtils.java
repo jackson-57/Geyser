@@ -1,6 +1,6 @@
 package org.geysermc.connector.utils;
 
-import org.geysermc.api.Geyser;
+import org.geysermc.connector.GeyserConnector;
 import org.geysermc.connector.inventory.Inventory;
 import org.geysermc.connector.network.session.GeyserSession;
 import org.geysermc.connector.network.translators.TranslatorsInit;
@@ -18,7 +18,7 @@ public class InventoryUtils {
             translator.prepareInventory(session, inventory);
             //TODO: find better way to handle double chest delay
             if (translator instanceof DoubleChestInventoryTranslator) {
-                Geyser.getGeneralThreadPool().schedule(() -> {
+                GeyserConnector.getInstance().getGeneralThreadPool().schedule(() -> {
                     translator.openInventory(session, inventory);
                     translator.updateInventory(session, inventory);
                 }, 200, TimeUnit.MILLISECONDS);
