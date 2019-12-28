@@ -57,6 +57,7 @@ import org.geysermc.connector.network.translators.java.scoreboard.JavaTeamTransl
 import org.geysermc.connector.network.translators.java.scoreboard.JavaUpdateScoreTranslator;
 import org.geysermc.connector.network.translators.java.window.*;
 import org.geysermc.connector.network.translators.java.world.*;
+import org.geysermc.connector.network.translators.block.entity.*; //BlockEntityTranslator
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

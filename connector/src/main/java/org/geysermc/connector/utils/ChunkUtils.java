@@ -5,7 +5,6 @@ import com.github.steveice10.mc.protocol.data.game.chunk.Column;
 import com.github.steveice10.mc.protocol.data.game.world.block.BlockState;
 import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
 import com.github.steveice10.opennbt.tag.builtin.Tag;
-import org.geysermc.connector.console.GeyserLogger;
 import com.nukkitx.math.vector.Vector3i;
 import com.nukkitx.protocol.bedrock.packet.UpdateBlockPacket;
 import org.geysermc.connector.network.session.GeyserSession;
@@ -17,7 +16,7 @@ import org.geysermc.connector.world.chunk.ChunkSection;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.List; //api
 
 public class ChunkUtils {
 
@@ -60,7 +59,6 @@ public class ChunkUtils {
         for (CompoundTag tag : blockEntities) {
             Tag idTag = tag.get("id");
             if (idTag == null && !tag.contains("Sign")) {
-                GeyserLogger.DEFAULT.debug("Got tag with no id: " + tag.getValue());
                 continue;
             }
 
