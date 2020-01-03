@@ -44,6 +44,7 @@
             <groupId>net.minecrell</groupId>
             <artifactId>terminalconsoleappender</artifactId>
             <version>1.0.0</version>
+            <type>jar</type>
             <scope>compile</scope>
         </dependency>
         <dependency>
