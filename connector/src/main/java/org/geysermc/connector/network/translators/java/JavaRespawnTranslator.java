@@ -41,6 +41,8 @@ public class JavaRespawnTranslator extends PacketTranslator<ServerRespawnPacket>
         if (entity == null)
             return;
 
+        session.getInventoryCache().setOpenInventory(null);
+
         float maxHealth = entity.getAttributes().containsKey(AttributeType.MAX_HEALTH) ? entity.getAttributes().get(AttributeType.MAX_HEALTH).getValue() : 20f;
         // Max health must be divisible by two in bedrock
         entity.getAttributes().put(AttributeType.HEALTH, AttributeType.HEALTH.getAttribute(maxHealth, (maxHealth % 2 == 1 ? maxHealth + 1 : maxHealth)));

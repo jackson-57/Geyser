@@ -5,6 +5,7 @@ import com.nukkitx.nbt.NbtUtils;
 import com.nukkitx.nbt.stream.NBTInputStream;
 import com.nukkitx.nbt.tag.CompoundTag;
 import com.nukkitx.nbt.tag.ListTag;
+import com.nukkitx.protocol.bedrock.data.ItemData;
 import com.nukkitx.nbt.tag.Tag;
 import com.nukkitx.protocol.bedrock.packet.StartGamePacket;
 
@@ -15,13 +16,14 @@ import org.geysermc.connector.console.GeyserLogger;
 import org.geysermc.connector.network.translators.block.BlockEntry;
 import org.geysermc.connector.network.translators.item.ItemEntry;
 
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 
 public class Toolbox {
 
     public static final Collection<StartGamePacket.ItemEntry> ITEMS = new ArrayList<>();
     public static ListTag<CompoundTag> BLOCKS;
+    public static ItemData[] CREATIVE_ITEMS;
 
     public static final Int2ObjectMap<ItemEntry> ITEM_ENTRIES = new Int2ObjectOpenHashMap<>();
     public static final Int2ObjectMap<BlockEntry> BLOCK_ENTRIES = new Int2ObjectOpenHashMap<>();
@@ -120,5 +122,37 @@ public class Toolbox {
             }
             GeyserLogger.DEFAULT.debug("Mapping " + javaEntry.getKey() + " was not found for bedrock edition!");
         }
+
+        InputStream creativeItemStream = Toolbox.class.getClassLoader().getResourceAsStream("bedrock/creative_items.json");
+        ObjectMapper creativeItemMapper = new ObjectMapper();
+        List<LinkedHashMap<String, Object>> creativeItemEntries = new ArrayList<>();
+
+        try {
+            creativeItemEntries = (ArrayList<LinkedHashMap<String, Object>>) creativeItemMapper.readValue(creativeItemStream, HashMap.class).get("items");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        List<ItemData> creativeItems = new ArrayList<>();
+        for (Map<String, Object> map : creativeItemEntries) {
+            short damage = 0;
+            if (map.containsKey("damage")) {
+                damage = (short)(int) map.get("damage");
+            }
+            if (map.containsKey("nbt_b64")) {
+                byte[] bytes = Base64.getDecoder().decode((String) map.get("nbt_b64"));
+                ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+                try {
+                    com.nukkitx.nbt.tag.CompoundTag tag = (com.nukkitx.nbt.tag.CompoundTag) NbtUtils.createReaderLE(bais).readTag();
+                    creativeItems.add(ItemData.of((int) map.get("id"), damage, 1, tag));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                creativeItems.add(ItemData.of((int) map.get("id"), damage, 1));
+            }
+        }
+
+        CREATIVE_ITEMS = creativeItems.toArray(new ItemData[0]);
     }
 }
