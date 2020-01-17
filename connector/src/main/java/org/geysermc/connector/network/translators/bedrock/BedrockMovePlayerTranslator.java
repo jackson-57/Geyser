@@ -30,7 +30,8 @@ import com.nukkitx.math.vector.Vector3f;
 import com.nukkitx.protocol.bedrock.packet.MoveEntityAbsolutePacket;
 import com.nukkitx.protocol.bedrock.packet.MovePlayerPacket;
 import com.nukkitx.protocol.bedrock.packet.SetEntityDataPacket;
-import org.geysermc.api.ChatColor;
+
+import org.geysermc.common.ChatColor;
 import org.geysermc.connector.entity.Entity;
 import org.geysermc.connector.entity.PlayerEntity;
 import org.geysermc.connector.entity.type.EntityType;
@@ -64,7 +65,7 @@ public class BedrockMovePlayerTranslator extends PacketTranslator<MovePlayerPack
         double javaY = packet.getPosition().getY() - EntityType.PLAYER.getOffset();
 
         ClientPlayerPositionRotationPacket playerPositionRotationPacket = new ClientPlayerPositionRotationPacket(
-                packet.isOnGround(), packet.getPosition().getX(), javaY,
+                packet.isOnGround(), packet.getPosition().getX(), Math.ceil(javaY * 2) / 2,
                 packet.getPosition().getZ(), packet.getRotation().getY(), packet.getRotation().getX()
         );
 
