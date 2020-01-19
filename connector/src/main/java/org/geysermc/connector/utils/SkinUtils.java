@@ -33,7 +33,9 @@ import com.nukkitx.protocol.bedrock.packet.PlayerListPacket;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.apache.commons.codec.Charsets;
 
+import org.geysermc.connector.network.session.GeyserSession;
 import org.geysermc.common.AuthType;
 import org.geysermc.connector.GeyserConnector;
 import org.geysermc.connector.entity.PlayerEntity;
