@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2020 GeyserMC. http://geysermc.org
+ * Copyright (c) 2019 GeyserMC. http://geysermc.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +23,32 @@
  * @link https://github.com/GeyserMC/Geyser
  */
 
-package org.geysermc.connector.entity.living.animal.horse;
+package org.geysermc.connector.network.translators.block.entity;
 
-import com.github.steveice10.mc.protocol.data.game.entity.metadata.EntityMetadata;
-import com.nukkitx.math.vector.Vector3f;
+import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
+import com.nukkitx.nbt.tag.Tag;
 
-import org.geysermc.connector.entity.living.animal.AnimalEntity;
-import org.geysermc.connector.entity.type.EntityType;
-import org.geysermc.connector.network.session.GeyserSession;
+import java.util.ArrayList;
+import java.util.List;
 
-public class AbstractHorseEntity extends AnimalEntity {
+public class EmptyBlockEntityTranslator extends BlockEntityTranslator {
 
-    public AbstractHorseEntity(long entityId, long geyserId, EntityType entityType, Vector3f position, Vector3f motion, Vector3f rotation) {
-        super(entityId, geyserId, entityType, position, motion, rotation);
+    public EmptyBlockEntityTranslator(String javaId, String bedrockId) {
+        super(javaId, bedrockId);
     }
 
     @Override
-    public void updateBedrockMetadata(EntityMetadata entityMetadata, GeyserSession session) {
-        super.updateBedrockMetadata(entityMetadata, session);
+    public List<Tag<?>> translateTag(CompoundTag tag) {
+        return new ArrayList<>();
+    }
+
+    @Override
+    public CompoundTag getDefaultJavaTag(int x, int y, int z) {
+        return getConstantJavaTag(x, y, z);
+    }
+
+    @Override
+    public com.nukkitx.nbt.tag.CompoundTag getDefaultBedrockTag(int x, int y, int z) {
+        return getConstantBedrockTag(x, y, z);
     }
 }
