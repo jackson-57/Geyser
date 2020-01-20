@@ -38,7 +38,7 @@ import com.nukkitx.protocol.bedrock.packet.UpdateBlockPacket;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
-import org.geysermc.connector.console.GeyserLogger;
+// import org.geysermc.connector.console.GeyserLogger;
 import org.geysermc.connector.network.session.GeyserSession;
 import org.geysermc.connector.network.translators.TranslatorsInit;
 import org.geysermc.connector.network.translators.block.BlockEntry;
@@ -88,7 +88,8 @@ public class ChunkUtils {
             CompoundTag tag = blockEntities[i];
             String tagName;
             if (!tag.contains("id")) {
-                GeyserLogger.DEFAULT.debug("Got tag with no id: " + tag.getValue());
+                // GeyserLogger.DEFAULT.debug("Got tag with no id: " + tag.getValue());
+		// disabled debug logging because i don't know how to fix this properly aaaaa
                 tagName = "Empty";
             } else {
                 tagName = (String) tag.get("id").getValue();
