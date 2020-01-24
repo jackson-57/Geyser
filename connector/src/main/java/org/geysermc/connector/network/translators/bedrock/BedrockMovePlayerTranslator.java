@@ -30,7 +30,6 @@ import com.nukkitx.math.vector.Vector3f;
 import com.nukkitx.protocol.bedrock.packet.MoveEntityAbsolutePacket;
 import com.nukkitx.protocol.bedrock.packet.MovePlayerPacket;
 import com.nukkitx.protocol.bedrock.packet.SetEntityDataPacket;
-
 import org.geysermc.common.ChatColor;
 import org.geysermc.connector.entity.Entity;
 import org.geysermc.connector.entity.PlayerEntity;
@@ -65,7 +64,7 @@ public class BedrockMovePlayerTranslator extends PacketTranslator<MovePlayerPack
         double javaY = packet.getPosition().getY() - EntityType.PLAYER.getOffset();
 
         ClientPlayerPositionRotationPacket playerPositionRotationPacket = new ClientPlayerPositionRotationPacket(
-                packet.isOnGround(), packet.getPosition().getX(), Math.ceil(javaY * 2) / 2,
+                packet.isOnGround(), packet.getPosition().getX(), javaY,
                 packet.getPosition().getZ(), packet.getRotation().getY(), packet.getRotation().getX()
         );
 
@@ -78,11 +77,9 @@ public class BedrockMovePlayerTranslator extends PacketTranslator<MovePlayerPack
         boolean colliding = false;
         Position position = new Position((int) packet.getPosition().getX(),
                 (int) Math.ceil(javaY * 2) / 2, (int) packet.getPosition().getZ());
-
         BlockEntry block = session.getChunkCache().getBlockAt(position);
         if (!block.getJavaIdentifier().contains("air"))
             colliding = true;
-
         if (!colliding)
          */
         session.getDownstream().getSession().send(playerPositionRotationPacket);
