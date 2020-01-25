@@ -53,15 +53,14 @@ public class JavaRespawnTranslator extends PacketTranslator<ServerRespawnPacket>
         session.setGameMode(packet.getGamemode());
 
         if (entity.getDimension() != DimensionUtils.javaToBedrock(packet.getDimension())) {
-            DimensionUtils.switchDimension(session, packet.getDimension());
+            DimensionUtils.switchDimension(session, packet.getDimension(), false);
         } else {
+            // Handled in JavaPlayerPositionRotationTranslator
+            session.setSpawned(false);
             if (session.isManyDimPackets()) { //reloading world
                 int fakeDim = entity.getDimension() == 0 ? -1 : 0;
-                DimensionUtils.switchDimension(session, fakeDim);
-                DimensionUtils.switchDimension(session, packet.getDimension());
-            } else {
-                // Handled in JavaPlayerPositionRotationTranslator
-                session.setSpawned(false);
+                DimensionUtils.switchDimension(session, fakeDim, true);
+                DimensionUtils.switchDimension(session, packet.getDimension(), false);
             }
         }
     }
