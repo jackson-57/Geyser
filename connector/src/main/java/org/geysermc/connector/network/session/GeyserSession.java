@@ -199,7 +199,7 @@ public class GeyserSession implements CommandSender {
                     PublicKey key = null;
                     try {
                         key = EncryptionUtil.getKeyFromFile(
-                                Paths.get(connector.getConfig().getFloodgateKeyFile()),
+                                Paths.get(connector.getConfig().getFloodgateKeyFile().getPath()),
                                 PublicKey.class
                         );
                     } catch (IOException | InvalidKeySpecException | NoSuchAlgorithmException e) {
