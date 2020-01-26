@@ -67,7 +67,6 @@ import org.geysermc.floodgate.util.EncryptionUtil;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
@@ -199,7 +198,7 @@ public class GeyserSession implements CommandSender {
                     PublicKey key = null;
                     try {
                         key = EncryptionUtil.getKeyFromFile(
-                                Paths.get(connector.getConfig().getFloodgateKeyFile().getPath()),
+                                connector.getConfig().getFloodgateKeyFile(),
                                 PublicKey.class
                         );
                     } catch (IOException | InvalidKeySpecException | NoSuchAlgorithmException e) {
