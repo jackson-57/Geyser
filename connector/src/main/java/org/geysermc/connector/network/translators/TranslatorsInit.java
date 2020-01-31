@@ -46,6 +46,8 @@ import lombok.Getter;
 import org.geysermc.connector.network.translators.bedrock.*;
 import org.geysermc.connector.network.translators.block.BlockTranslator;
 import org.geysermc.connector.network.translators.inventory.*;
+import org.geysermc.connector.network.translators.inventory.updater.ContainerInventoryUpdater;
+import org.geysermc.connector.network.translators.inventory.updater.InventoryUpdater;
 import org.geysermc.connector.network.translators.block.entity.*;
 import org.geysermc.connector.network.translators.item.ItemTranslator;
 import org.geysermc.connector.network.translators.java.*;
@@ -73,7 +75,7 @@ public class TranslatorsInit {
     private static BlockTranslator blockTranslator;
 
     @Getter
-    private static Map<WindowType, InventoryTranslator> inventoryTranslators = new HashMap<WindowType, InventoryTranslator>();
+    private static Map<WindowType, InventoryTranslator> inventoryTranslators = new HashMap<>();
 
     @Getter
     private static Map<String, BlockEntityTranslator> blockEntityTranslators = new HashMap<>();
@@ -131,6 +133,7 @@ public class TranslatorsInit {
         Registry.registerJava(ServerPlayerSetExperiencePacket.class, new JavaPlayerSetExperienceTranslator());
         Registry.registerJava(ServerPlayerHealthPacket.class, new JavaPlayerHealthTranslator());
         Registry.registerJava(ServerPlayerActionAckPacket.class, new JavaPlayerActionAckTranslator());
+        Registry.registerJava(ServerPlayerChangeHeldItemPacket.class, new JavaPlayerChangeHeldItemTranslator());
 
         // FIXME: This translator messes with allowing flight in creative mode. Will need to be addressed later
         // Registry.registerJava(ServerPlayerAbilitiesPacket.class, new JavaPlayerAbilitiesTranslator());
@@ -190,9 +193,9 @@ public class TranslatorsInit {
         inventoryTranslators.put(WindowType.GENERIC_9X4, new DoubleChestInventoryTranslator(36));
         inventoryTranslators.put(WindowType.GENERIC_9X5, new DoubleChestInventoryTranslator(45));
         inventoryTranslators.put(WindowType.GENERIC_9X6, new DoubleChestInventoryTranslator(54));
-        inventoryTranslators.put(WindowType.BREWING_STAND, new BrewingStandInventoryTranslator());
+        inventoryTranslators.put(WindowType.BREWING_STAND, new BrewingInventoryTranslator());
         inventoryTranslators.put(WindowType.ANVIL, new AnvilInventoryTranslator());
-        inventoryTranslators.put(WindowType.CRAFTING, new CraftingTableInventoryTranslator());
+        inventoryTranslators.put(WindowType.CRAFTING, new CraftingInventoryTranslator());
         //inventoryTranslators.put(WindowType.ENCHANTMENT, new EnchantmentInventoryTranslator()); //TODO
 
         InventoryTranslator furnace = new FurnaceInventoryTranslator();
@@ -200,9 +203,10 @@ public class TranslatorsInit {
         inventoryTranslators.put(WindowType.BLAST_FURNACE, furnace);
         inventoryTranslators.put(WindowType.SMOKER, furnace);
 
-        inventoryTranslators.put(WindowType.GENERIC_3X3, new BlockInventoryTranslator(9, "minecraft:dispenser[facing=north,triggered=false]", ContainerType.DISPENSER));
-        inventoryTranslators.put(WindowType.HOPPER, new BlockInventoryTranslator(5, "minecraft:hopper[enabled=false,facing=down]", ContainerType.HOPPER));
-        inventoryTranslators.put(WindowType.SHULKER_BOX, new BlockInventoryTranslator(27, "minecraft:shulker_box[facing=north]", ContainerType.CONTAINER));
+        InventoryUpdater containerUpdater = new ContainerInventoryUpdater();
+        inventoryTranslators.put(WindowType.GENERIC_3X3, new BlockInventoryTranslator(9, "minecraft:dispenser[facing=north,triggered=false]", ContainerType.DISPENSER, containerUpdater));
+        inventoryTranslators.put(WindowType.HOPPER, new BlockInventoryTranslator(5, "minecraft:hopper[enabled=false,facing=down]", ContainerType.HOPPER, containerUpdater));
+        inventoryTranslators.put(WindowType.SHULKER_BOX, new BlockInventoryTranslator(27, "minecraft:shulker_box[facing=north]", ContainerType.CONTAINER, containerUpdater));
         //inventoryTranslators.put(WindowType.BEACON, new BlockInventoryTranslator(1, "minecraft:beacon", ContainerType.BEACON)); //TODO
     }
 }
