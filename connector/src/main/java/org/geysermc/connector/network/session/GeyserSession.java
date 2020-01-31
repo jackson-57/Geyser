@@ -71,6 +71,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Getter
 public class GeyserSession implements CommandSender {
@@ -108,8 +109,7 @@ public class GeyserSession implements CommandSender {
     @Setter
     private GameMode gameMode = GameMode.SURVIVAL;
 
-    @Setter
-    private boolean switchingDimension = false;
+    private final AtomicInteger pendingDimSwitches = new AtomicInteger(0);
     private boolean manyDimPackets = false;
     private ServerRespawnPacket lastDimPacket = null;
 
