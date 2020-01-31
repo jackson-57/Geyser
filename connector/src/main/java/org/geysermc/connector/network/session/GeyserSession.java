@@ -60,6 +60,7 @@ import org.geysermc.connector.network.session.auth.AuthData;
 import org.geysermc.connector.network.session.auth.BedrockClientData;
 import org.geysermc.connector.network.session.cache.*;
 import org.geysermc.connector.network.translators.Registry;
+import org.geysermc.connector.network.translators.block.BlockTranslator;
 import org.geysermc.connector.utils.ChunkUtils;
 import org.geysermc.connector.utils.Toolbox;
 import org.geysermc.floodgate.util.BedrockData;
@@ -382,7 +383,7 @@ public class GeyserSession implements CommandSender {
         // startGamePacket.setCurrentTick(0);
         startGamePacket.setEnchantmentSeed(0);
         startGamePacket.setMultiplayerCorrelationId("");
-        startGamePacket.setBlockPalette(Toolbox.BLOCKS);
+        startGamePacket.setBlockPalette(BlockTranslator.BLOCKS);
         startGamePacket.setItemEntries(Toolbox.ITEMS);
         startGamePacket.setVanillaVersion("*");
         // startGamePacket.setMovementServerAuthoritative(true);

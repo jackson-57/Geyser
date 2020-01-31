@@ -41,9 +41,10 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.geysermc.connector.GeyserConnector;
 import org.geysermc.connector.network.session.GeyserSession;
 import org.geysermc.connector.network.translators.TranslatorsInit;
-import org.geysermc.connector.network.translators.block.BlockEntry;
+import org.geysermc.connector.network.translators.block.BlockTranslator;
 import org.geysermc.connector.network.translators.block.entity.BlockEntityTranslator;
 import org.geysermc.connector.world.chunk.ChunkPosition;
+import org.geysermc.connector.network.translators.block.BlockEntry;
 import org.geysermc.connector.world.chunk.ChunkSection;
 
 public class ChunkUtils {
@@ -66,7 +67,7 @@ public class ChunkUtils {
                 for (int y = 0; y < 16; y++) {
                     for (int z = 0; z < 16; z++) {
                         BlockState blockState = chunk.get(x, y, z);
-                        BlockEntry block = TranslatorsInit.getBlockTranslator().getBlockEntry(blockState);
+                        int id = BlockTranslator.getBedrockBlockId(blockState);
                         if (block.getJavaIdentifier().contains("sign[")) {
                             Position pos = new ChunkPosition(column.getX(), column.getZ()).getBlock(x, (chunkY << 4) + y, z);
                             chunkData.signs.put(block.getJavaId(), TranslatorsInit.getBlockEntityTranslators().get("Sign").getDefaultBedrockTag("Sign", pos.getX(), pos.getY(), pos.getZ()));
@@ -74,9 +75,11 @@ public class ChunkUtils {
                             section.getBlockStorageArray()[0].setFullBlock(ChunkSection.blockPosition(x, y, z), block.getBedrockRuntimeId());
                         }
 
-                        if (block.isWaterlogged()) {
-                            BlockEntry water = TranslatorsInit.getBlockTranslator().getBlockEntry("minecraft:water[level=0]");
-                            section.getBlockStorageArray()[1].setFullBlock(ChunkSection.blockPosition(x, y, z), water.getBedrockRuntimeId());
+                        section.getBlockStorageArray()[0].setFullBlock(ChunkSection.blockPosition(x, y, z), id);
+
+                        int waterloggedId = BlockTranslator.getBedrockWaterLoggedId(blockState);
+                        if (waterloggedId != -1) {
+                            section.getBlockStorageArray()[1].setFullBlock(ChunkSection.blockPosition(x, y, z), waterloggedId);
                         }
                     }
                 }
@@ -103,22 +106,22 @@ public class ChunkUtils {
     }
 
     public static void updateBlock(GeyserSession session, BlockState blockState, Position position) {
-        BlockEntry blockEntry = TranslatorsInit.getBlockTranslator().getBlockEntry(blockState);
+        int blockId = BlockTranslator.getBedrockBlockId(blockState);
         Vector3i pos = Vector3i.from(position.getX(), position.getY(), position.getZ());
 
         UpdateBlockPacket updateBlockPacket = new UpdateBlockPacket();
         updateBlockPacket.setDataLayer(0);
         updateBlockPacket.setBlockPosition(pos);
-        updateBlockPacket.setRuntimeId(blockEntry.getBedrockRuntimeId());
+        updateBlockPacket.setRuntimeId(blockId);
         updateBlockPacket.getFlags().add(UpdateBlockPacket.Flag.NEIGHBORS);
         session.getUpstream().sendPacket(updateBlockPacket);
 
         UpdateBlockPacket waterPacket = new UpdateBlockPacket();
         waterPacket.setDataLayer(1);
         waterPacket.setBlockPosition(pos);
-        if (blockEntry.isWaterlogged()) {
-            BlockEntry water = TranslatorsInit.getBlockTranslator().getBlockEntry("minecraft:water[level=0]");
-            waterPacket.setRuntimeId(water.getBedrockRuntimeId());
+        int waterloggedId = BlockTranslator.getBedrockWaterLoggedId(blockState);
+        if (waterloggedId != -1) {
+            waterPacket.setRuntimeId(waterloggedId);
         } else {
             waterPacket.setRuntimeId(0);
         }
