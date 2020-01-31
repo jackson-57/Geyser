@@ -33,7 +33,7 @@ import com.nukkitx.protocol.bedrock.packet.LevelChunkPacket;
 import lombok.Getter;
 import org.geysermc.connector.network.session.GeyserSession;
 import org.geysermc.connector.network.translators.TranslatorsInit;
-import org.geysermc.connector.network.translators.block.BlockTranslator;
+import org.geysermc.connector.network.translators.block.BlockEntry;
 import org.geysermc.connector.world.chunk.ChunkPosition;
 
 import java.util.HashMap;
@@ -69,19 +69,20 @@ public class ChunkCache {
         }
     }
 
-    public BlockState getBlockAt(Position position) {
+    public BlockEntry getBlockAt(Position position) {
         ChunkPosition chunkPosition = new ChunkPosition(position.getX() >> 4, position.getZ() >> 4);
         if (!chunks.containsKey(chunkPosition))
-            return BlockTranslator.AIR;
+            return BlockEntry.AIR;
 
         Column column = chunks.get(chunkPosition);
         Chunk chunk = column.getChunks()[position.getY() >> 4];
         Position blockPosition = chunkPosition.getChunkBlock(position.getX(), position.getY(), position.getZ());
         if (chunk != null) {
-            return chunk.get(blockPosition.getX(), blockPosition.getY(), blockPosition.getZ());
+            BlockState blockState = chunk.get(blockPosition.getX(), blockPosition.getY(), blockPosition.getZ());
+            return TranslatorsInit.getBlockTranslator().getBlockEntry(blockState);
         }
 
-        return BlockTranslator.AIR;
+        return BlockEntry.AIR;
     }
 
     public void removeChunk(ChunkPosition position) {
