@@ -39,6 +39,8 @@ import com.nukkitx.math.vector.Vector2f;
 import com.nukkitx.math.vector.Vector2i;
 import com.nukkitx.math.vector.Vector3f;
 import com.nukkitx.math.vector.Vector3i;
+import com.nukkitx.nbt.NbtUtils;
+import com.nukkitx.nbt.stream.NBTInputStream;
 import com.nukkitx.nbt.tag.CompoundTag;
 import com.nukkitx.protocol.bedrock.BedrockServerSession;
 import com.nukkitx.protocol.bedrock.data.ContainerId;
@@ -65,6 +67,7 @@ import org.geysermc.connector.utils.Toolbox;
 import org.geysermc.floodgate.util.BedrockData;
 import org.geysermc.floodgate.util.EncryptionUtil;
 
+import java.io.InputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.NoSuchAlgorithmException;
@@ -152,9 +155,9 @@ public class GeyserSession implements CommandSender {
 
         ChunkUtils.sendEmptyChunks(this, playerEntity.getPosition().toInt(), 0, false);
 
-        BiomeDefinitionListPacket biomePacket = new BiomeDefinitionListPacket();
-        biomePacket.setTag(CompoundTag.EMPTY);
-        upstream.sendPacket(biomePacket);
+        BiomeDefinitionListPacket biomeDefinitionListPacket = new BiomeDefinitionListPacket();
+        biomeDefinitionListPacket.setTag(Toolbox.BIOMES);
+        upstream.sendPacket(biomeDefinitionListPacket);
 
         AvailableEntityIdentifiersPacket entityPacket = new AvailableEntityIdentifiersPacket();
         entityPacket.setTag(CompoundTag.EMPTY);
