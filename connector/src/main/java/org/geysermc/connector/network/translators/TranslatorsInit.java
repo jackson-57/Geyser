@@ -158,6 +158,9 @@ public class TranslatorsInit {
         Registry.registerJava(ServerConfirmTransactionPacket.class, new JavaConfirmTransactionTranslator());
         Registry.registerJava(ServerWindowPropertyPacket.class, new JavaWindowPropertyTranslator());
 
+        Registry.registerJava(ServerUpdateViewDistancePacket.class, new JavaUpdateViewDistanceTranslator());
+        Registry.registerJava(ServerUpdateViewPositionPacket.class, new JavaUpdateViewPositionTranslator());
+
         Registry.registerBedrock(AnimatePacket.class, new BedrockAnimateTranslator());
         Registry.registerBedrock(CommandRequestPacket.class, new BedrockCommandRequestTranslator());
         Registry.registerBedrock(InventoryTransactionPacket.class, new BedrockInventoryTransactionTranslator());
