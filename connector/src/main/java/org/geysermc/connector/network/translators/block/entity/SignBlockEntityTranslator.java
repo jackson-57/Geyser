@@ -57,8 +57,8 @@ public class SignBlockEntityTranslator extends BlockEntityTranslator {
     }
 
     @Override
-    public CompoundTag getDefaultJavaTag(int x, int y, int z) {
-        CompoundTag tag = getConstantJavaTag("minecraft:sign", x, y, z);
+    public CompoundTag getDefaultJavaTag(String javaId, int x, int y, int z) {
+        CompoundTag tag = getConstantJavaTag(javaId, x, y, z);
         tag.put(new com.github.steveice10.opennbt.tag.builtin.StringTag("Text1", "{\"text\":\"\"}"));
         tag.put(new com.github.steveice10.opennbt.tag.builtin.StringTag("Text2", "{\"text\":\"\"}"));
         tag.put(new com.github.steveice10.opennbt.tag.builtin.StringTag("Text3", "{\"text\":\"\"}"));

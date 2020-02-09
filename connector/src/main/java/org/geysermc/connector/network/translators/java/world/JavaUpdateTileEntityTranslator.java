@@ -40,7 +40,15 @@ public class JavaUpdateTileEntityTranslator extends PacketTranslator<ServerUpdat
     public void translate(ServerUpdateTileEntityPacket packet, GeyserSession session) {
         String id = BlockEntityUtils.getBedrockBlockEntityId(packet.getType().name());
         BlockEntityTranslator translator = BlockEntityUtils.getBlockEntityTranslator(id);
-        blockEntityPacket.setData(translator.getBlockEntityTag(packet.getNbt(), id));
-        session.getUpstream().sendPacket(blockEntityPacket);
+        if (id.equalsIgnoreCase("Sign")) {
+            // Delay so chunks can finish sending
+            session.getConnector().getGeneralThreadPool().schedule(() ->
+                    BlockEntityUtils.updateBlockEntity(session, translator.getBlockEntityTag(packet.getNbt()), packet.getPosition()),
+                    5,
+                    TimeUnit.SECONDS
+            );
+        } else {
+            BlockEntityUtils.updateBlockEntity(session, translator.getBlockEntityTag(packet.getNbt()), packet.getPosition());
+        }
     }
 }

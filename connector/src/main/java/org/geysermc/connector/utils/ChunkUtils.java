@@ -69,18 +69,7 @@ public class ChunkUtils {
                 for (int y = 0; y < 16; y++) {
                     for (int z = 0; z < 16; z++) {
                         BlockState blockState = chunk.get(x, y, z);
-                        BlockEntry block = TranslatorsInit.getBlockTranslator().getBedrockBlock(blockState);
-
-                        // Block entity data for signs is not sent in this packet, which is needed
-                        // for bedrock, so we need to check the block itself
-//                        if (block.getJavaIdentifier().contains("sign")) {
-////                            SignBlockEntityTranslator sign = (SignBlockEntityTranslator) BlockEntityUtils.getBlockEntityTranslator("Sign");
-////                            blockEntities.add(sign.getDefaultJavaTag(x, y, z));
-//                            section.getBlockStorageArray()[0].setFullBlock(ChunkSection.blockPosition(x, y, z), 0);
-////                            System.out.println("Found sign at " + x + " " + y + " " + z);
-//                            continue;
-//                        }
-
+                        BlockEntry block = TranslatorsInit.getBlockTranslator().getBlockEntry(blockState);
                         section.getBlockStorageArray()[0].setFullBlock(ChunkSection.blockPosition(x, y, z),
                         block.getBedrockRuntimeId());
 								
@@ -90,22 +79,31 @@ public class ChunkUtils {
                         } else {
                             section.getBlockStorageArray()[0].setFullBlock(ChunkSection.blockPosition(x, y, z), block.getBedrockRuntimeId());
                         }
+
+
+                        if (block.isWaterlogged()) {
+                            BlockEntry water = TranslatorsInit.getBlockTranslator().getBlockEntry("minecraft:water[level=0]");
+                            section.getBlockStorageArray()[1].setFullBlock(ChunkSection.blockPosition(x, y, z), water.getBedrockRuntimeId());
+                        }
                     }
                 }
             }
         }
-
-        List<com.nukkitx.nbt.tag.CompoundTag> bedrockBlockEntities = new ArrayList<>();
-        for (CompoundTag tag : blockEntities) {
-            Tag idTag = tag.get("id");
-            if (idTag == null && !tag.contains("Sign")) {
-                GeyserLogger.DEFAULT.debug("Got tag with no id: " + tag.getValue());
-                continue;
+		
+        com.nukkitx.nbt.tag.CompoundTag[] bedrockBlockEntities = new com.nukkitx.nbt.tag.CompoundTag[blockEntities.length];
+        for (int i = 0; i < bedrockBlockEntities.length; i++) {
+            CompoundTag tag = blockEntities[i];
+            String tagName;
+            if (!tag.contains("id")) {
+              //  GeyserLogger.DEFAULT.debug("Got tag with no id: " + tag.getValue());
+                tagName = "Empty";
+            } else {
+                tagName = (String) tag.get("id").getValue();
             }
 
-            String id = idTag == null ? "Sign" : BlockEntityUtils.getBedrockBlockEntityId((String) idTag.getValue());
+            String id = BlockEntityUtils.getBedrockBlockEntityId(tagName);
             BlockEntityTranslator blockEntityTranslator = BlockEntityUtils.getBlockEntityTranslator(id);
-            bedrockBlockEntities.add(blockEntityTranslator.getBlockEntityTag(tag, id));
+            bedrockBlockEntities[i] = blockEntityTranslator.getBlockEntityTag(tag);
         }
 
         chunkData.blockEntities = bedrockBlockEntities;
