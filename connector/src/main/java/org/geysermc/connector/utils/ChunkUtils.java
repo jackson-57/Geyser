@@ -70,9 +70,16 @@ public class ChunkUtils {
                     for (int z = 0; z < 16; z++) {
                         BlockState blockState = chunk.get(x, y, z);
                         BlockEntry block = TranslatorsInit.getBlockTranslator().getBlockEntry(blockState);
-
                         section.getBlockStorageArray()[0].setFullBlock(ChunkSection.blockPosition(x, y, z),
-                                block.getBedrockRuntimeId());
+                        block.getBedrockRuntimeId());
+								
+                        if (block.getJavaIdentifier().contains("sign[")) {
+                            Position pos = new ChunkPosition(column.getX(), column.getZ()).getBlock(x, (chunkY << 4) + y, z);
+                            chunkData.signs.put(block.getJavaId(), TranslatorsInit.getBlockEntityTranslators().get("Sign").getDefaultBedrockTag("Sign", pos.getX(), pos.getY(), pos.getZ()));
+                        } else {
+                            section.getBlockStorageArray()[0].setFullBlock(ChunkSection.blockPosition(x, y, z), block.getBedrockRuntimeId());
+                        }
+
 
                         if (block.isWaterlogged()) {
                             BlockEntry water = TranslatorsInit.getBlockTranslator().getBlockEntry("minecraft:water[level=0]");
@@ -158,7 +165,7 @@ public class ChunkUtils {
     public static final class ChunkData {
         public ChunkSection[] sections;
 		
-	    public byte[] biomes = new byte[256];
+	//    public byte[] biomes = new byte[256];
 		
         public com.nukkitx.nbt.tag.CompoundTag[] blockEntities = new com.nukkitx.nbt.tag.CompoundTag[0];
 
