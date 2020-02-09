@@ -45,20 +45,23 @@ public class JavaRespawnTranslator extends PacketTranslator<ServerRespawnPacket>
         // Max health must be divisible by two in bedrock
         entity.getAttributes().put(AttributeType.HEALTH, AttributeType.HEALTH.getAttribute(maxHealth, (maxHealth % 2 == 1 ? maxHealth + 1 : maxHealth)));
 
+        session.getInventoryCache().setOpenInventory(null);
+
         SetPlayerGameTypePacket playerGameTypePacket = new SetPlayerGameTypePacket();
         playerGameTypePacket.setGamemode(packet.getGamemode().ordinal());
         session.getUpstream().sendPacket(playerGameTypePacket);
         session.setGameMode(packet.getGamemode());
 
         if (entity.getDimension() != DimensionUtils.javaToBedrock(packet.getDimension())) {
-            DimensionUtils.switchDimension(session, packet.getDimension(), false);
+            DimensionUtils.switchDimension(session, packet.getDimension());
         } else {
-            // Handled in JavaPlayerPositionRotationTranslator
-            session.setSpawned(false);
             if (session.isManyDimPackets()) { //reloading world
                 int fakeDim = entity.getDimension() == 0 ? -1 : 0;
-                DimensionUtils.switchDimension(session, fakeDim, true);
-                DimensionUtils.switchDimension(session, packet.getDimension(), false);
+                DimensionUtils.switchDimension(session, fakeDim);
+                DimensionUtils.switchDimension(session, packet.getDimension());
+            } else {
+                // Handled in JavaPlayerPositionRotationTranslator
+                session.setSpawned(false);
             }
         }
     }

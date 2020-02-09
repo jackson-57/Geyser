@@ -34,11 +34,13 @@ import com.nukkitx.protocol.bedrock.data.EntityDataDictionary;
 import com.nukkitx.protocol.bedrock.data.EntityFlag;
 import com.nukkitx.protocol.bedrock.data.EntityFlags;
 import com.nukkitx.protocol.bedrock.packet.*;
+
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.geysermc.connector.console.GeyserLogger;
+
 import org.geysermc.connector.entity.attribute.Attribute;
 import org.geysermc.connector.entity.attribute.AttributeType;
 import org.geysermc.connector.entity.type.EntityType;
@@ -115,7 +117,7 @@ public class Entity {
         valid = true;
         session.getUpstream().sendPacket(addEntityPacket);
 
-        GeyserLogger.DEFAULT.debug("Spawned entity " + entityType + " at location " + position + " with id " + geyserId + " (java id " + entityId + ")");
+        session.getConnector().getLogger().debug("Spawned entity " + entityType + " at location " + position + " with id " + geyserId + " (java id " + entityId + ")");
     }
 
     /**
@@ -191,7 +193,7 @@ public class Entity {
                     metadata.put(EntityData.NAMETAG, MessageUtils.getBedrockMessage(name));
                 break;
             case 3: // is custom name visible
-                metadata.getFlags().setFlag(EntityFlag.ALWAYS_SHOW_NAME, (boolean) entityMetadata.getValue());
+                metadata.put(EntityData.ALWAYS_SHOW_NAMETAG, (byte) ((boolean) entityMetadata.getValue() ? 1 : 0));
                 break;
             case 4: // silent
                 metadata.getFlags().setFlag(EntityFlag.SILENT, (boolean) entityMetadata.getValue());

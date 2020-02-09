@@ -29,7 +29,9 @@ import com.github.steveice10.mc.protocol.packet.ingame.client.world.ClientTelepo
 import com.github.steveice10.mc.protocol.packet.ingame.server.entity.player.ServerPlayerPositionRotationPacket;
 import com.nukkitx.math.vector.Vector3f;
 import com.nukkitx.protocol.bedrock.packet.*;
-import org.geysermc.connector.console.GeyserLogger;
+import com.nukkitx.protocol.bedrock.packet.MovePlayerPacket;
+import com.nukkitx.protocol.bedrock.packet.SetEntityDataPacket;
+
 import org.geysermc.connector.entity.Entity;
 import org.geysermc.connector.entity.type.EntityType;
 import org.geysermc.connector.network.session.GeyserSession;
@@ -51,7 +53,7 @@ public class JavaPlayerPositionRotationTranslator extends PacketTranslator<Serve
             entity.moveAbsolute(pos, packet.getYaw(), packet.getPitch());
 
             RespawnPacket respawnPacket = new RespawnPacket();
-            respawnPacket.setRuntimeEntityId(0);
+            respawnPacket.setRuntimeEntityId(entity.getGeyserId());
             respawnPacket.setPosition(pos);
             respawnPacket.setSpawnState(RespawnPacket.State.SERVER_READY);
             session.getUpstream().sendPacket(respawnPacket);
@@ -78,7 +80,10 @@ public class JavaPlayerPositionRotationTranslator extends PacketTranslator<Serve
             session.getUpstream().sendPacket(movePlayerPacket);
             session.setSpawned(true);
 
-            GeyserLogger.DEFAULT.info("Spawned player at " + packet.getX() + " " + packet.getY() + " " + packet.getZ());
+            ClientTeleportConfirmPacket teleportConfirmPacket = new ClientTeleportConfirmPacket(packet.getTeleportId());
+            session.getDownstream().getSession().send(teleportConfirmPacket);
+
+            session.getConnector().getLogger().info("Spawned player at " + packet.getX() + " " + packet.getY() + " " + packet.getZ());
             return;
         }
 
