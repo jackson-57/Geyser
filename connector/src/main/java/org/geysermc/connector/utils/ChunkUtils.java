@@ -158,6 +158,8 @@ public class ChunkUtils {
     public static final class ChunkData {
         public ChunkSection[] sections;
 		
+	    public byte[] biomes = new byte[256];
+		
         public com.nukkitx.nbt.tag.CompoundTag[] blockEntities = new com.nukkitx.nbt.tag.CompoundTag[0];
 
         public Int2ObjectMap<com.nukkitx.nbt.tag.CompoundTag> signs = new Int2ObjectOpenHashMap<>();
