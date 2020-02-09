@@ -32,6 +32,7 @@ import com.github.steveice10.mc.protocol.data.game.world.block.BlockState;
 import com.github.steveice10.mc.protocol.packet.ingame.server.world.ServerChunkDataPacket;
 import com.nukkitx.math.vector.Vector2i;
 import com.nukkitx.math.vector.Vector3f;
+import com.nukkitx.math.vector.Vector3i;
 import com.nukkitx.nbt.NbtUtils;
 import com.nukkitx.nbt.stream.NBTOutputStream;
 import com.nukkitx.nbt.tag.CompoundTag;
@@ -54,9 +55,9 @@ import org.geysermc.connector.world.chunk.ChunkSection;
 public class JavaChunkDataTranslator extends PacketTranslator<ServerChunkDataPacket> {
 
     @Override
-    public void translate(ServerChunkDataPacket packet, GeyserSession session) {
+    public void translate(ServerChunkDataPacket packet, GeyserSession session) { //geyser
         // Not sure if this is safe or not, however without this the client usually times out
-        Geyser.getConnector().getGeneralThreadPool().execute(() -> {
+        GeyserConnector.getInstance().getGeneralThreadPool().execute(() -> {
             try {
                 if (packet.getColumn().getBiomeData() != null) { //Full chunk
                     ChunkUtils.ChunkData chunkData = ChunkUtils.translateToBedrock(packet.getColumn());
@@ -78,16 +79,35 @@ public class JavaChunkDataTranslator extends PacketTranslator<ServerChunkDataPac
                     byteBuf.writeByte(0); // Border blocks - Edu edition only
                     VarInts.writeUnsignedInt(byteBuf, 0); // extra data length, 0 for now
 
-                    byte[] payload = new byte[byteBuf.writerIndex()];
-                    byteBuf.readBytes(payload);
+                ByteBufOutputStream stream = new ByteBufOutputStream(Unpooled.buffer());
+                NBTOutputStream nbtStream = NbtUtils.createNetworkWriter(stream);
+                for (CompoundTag blockEntity : chunkData.blockEntities) {
+                    nbtStream.write(blockEntity);
+                }
 
-                    LevelChunkPacket levelChunkPacket = new LevelChunkPacket();
-                    levelChunkPacket.setSubChunksLength(sectionCount);
-                    levelChunkPacket.setCachingEnabled(false);
-                    levelChunkPacket.setChunkX(packet.getColumn().getX());
-                    levelChunkPacket.setChunkZ(packet.getColumn().getZ());
-                    levelChunkPacket.setData(payload);
-                    session.getUpstream().sendPacket(levelChunkPacket);
+                byteBuf.writeBytes(stream.buffer());
+
+                byte[] payload = new byte[byteBuf.writerIndex()];
+                byteBuf.readBytes(payload);
+
+                LevelChunkPacket levelChunkPacket = new LevelChunkPacket();
+                levelChunkPacket.setSubChunksLength(sectionCount);
+                levelChunkPacket.setCachingEnabled(false);
+                levelChunkPacket.setChunkX(packet.getColumn().getX());
+                levelChunkPacket.setChunkZ(packet.getColumn().getZ());
+                levelChunkPacket.setData(payload);
+                session.getUpstream().sendPacket(levelChunkPacket);
+
+                // Signs have to be sent after the chunk since in later versions they aren't included in the block entities
+                for (Int2ObjectMap.Entry<CompoundTag> blockEntityEntry : chunkData.signs.int2ObjectEntrySet()) {
+                    int x = blockEntityEntry.getValue().getAsInt("x");
+                    int y = blockEntityEntry.getValue().getAsInt("y");
+                    int z = blockEntityEntry.getValue().getAsInt("z");
+
+                    ChunkUtils.updateBlock(session, new BlockState(blockEntityEntry.getIntKey()), new Position(x, y, z));
+                }
+                chunkData.signs.clear();
+				
                 } else {
                     final int xOffset = packet.getColumn().getX() << 4;
                     final int zOffset = packet.getColumn().getZ() << 4;
@@ -110,15 +130,6 @@ public class JavaChunkDataTranslator extends PacketTranslator<ServerChunkDataPac
                         }
                     }
                 }
-                // Signs have to be sent after the chunk since in later versions they aren't included in the block entities
-                for (Int2ObjectMap.Entry<CompoundTag> blockEntityEntry : chunkData.signs.int2ObjectEntrySet()) {
-                    int x = blockEntityEntry.getValue().getAsInt("x");
-                    int y = blockEntityEntry.getValue().getAsInt("y");
-                    int z = blockEntityEntry.getValue().getAsInt("z");
-
-                    ChunkUtils.updateBlock(session, new BlockState(blockEntityEntry.getIntKey()), new Position(x, y, z));
-                }
-                chunkData.signs.clear();
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
