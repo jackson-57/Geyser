@@ -39,7 +39,7 @@ public class DimensionUtils {
 
         session.getEntityCache().removeAllEntities();
         if (session.getPendingDimSwitches().getAndIncrement() > 0) {
-            ChunkUtils.sendEmptyChunks(session, player.getPosition().toInt(), 2, true);
+            ChunkUtils.sendEmptyChunks(session, player.getPosition().toInt(), 3, true);
         }
 
         Vector3i pos = Vector3i.from(0, Short.MAX_VALUE, 0);

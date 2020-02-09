@@ -66,20 +66,41 @@ public class JavaChunkDataTranslator extends PacketTranslator<ServerChunkDataPac
                 session.setLastChunkPosition(newChunkPos);
             }
 
-            try {
-                ChunkUtils.ChunkData chunkData = ChunkUtils.translateToBedrock(packet.getColumn());
-                ByteBuf byteBuf = Unpooled.buffer(32);
-                ChunkSection[] sections = chunkData.sections;
+                    byteBuf.writeBytes(chunkData.biomes); // Biomes - 256 bytes
+                    byteBuf.writeByte(0); // Border blocks - Edu edition only
+                    VarInts.writeUnsignedInt(byteBuf, 0); // extra data length, 0 for now
 
-                int sectionCount = sections.length - 1;
-                while (sectionCount >= 0 && sections[sectionCount].isEmpty()) {
-                    sectionCount--;
-                }
-                sectionCount++;
+                    byte[] payload = new byte[byteBuf.writerIndex()];
+                    byteBuf.readBytes(payload);
 
-                for (int i = 0; i < sectionCount; i++) {
-                    ChunkSection section = chunkData.sections[i];
-                    section.writeToNetwork(byteBuf);
+                    LevelChunkPacket levelChunkPacket = new LevelChunkPacket();
+                    levelChunkPacket.setSubChunksLength(sectionCount);
+                    levelChunkPacket.setCachingEnabled(false);
+                    levelChunkPacket.setChunkX(packet.getColumn().getX());
+                    levelChunkPacket.setChunkZ(packet.getColumn().getZ());
+                    levelChunkPacket.setData(payload);
+                    session.getUpstream().sendPacket(levelChunkPacket);
+                } else {
+                    final int xOffset = packet.getColumn().getX() << 4;
+                    final int zOffset = packet.getColumn().getZ() << 4;
+                    Chunk[] chunks = packet.getColumn().getChunks();
+                    for (int i = 0; i < chunks.length; i++) {
+                        Chunk chunk = chunks[i];
+                        if (chunk == null) continue;
+                        final int yOffset = i * 16;
+                        for (int x = 0; x < 16; x++) {
+                            for (int y = 0; y < 16; y++) {
+                                for (int z = 0; z < 16; z++) {
+                                    BlockState blockState = chunk.get(x, y, z);
+                                    Vector3i pos = Vector3i.from(
+                                            x + xOffset,
+                                            y + yOffset,
+                                            z + zOffset);
+                                    ChunkUtils.updateBlock(session, blockState, pos);
+                                }
+                            }
+                        }
+                    }
                 }
 
                 byte[] bedrockBiome = BiomeTranslator.toBedrockBiome(packet.getColumn().getBiomeData());
