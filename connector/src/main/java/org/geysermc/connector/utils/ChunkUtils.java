@@ -48,15 +48,14 @@ import org.geysermc.connector.world.chunk.ChunkPosition;
 import org.geysermc.connector.world.chunk.ChunkSection;
 
 public class ChunkUtils {
+
     public static ChunkData translateToBedrock(Column column) {
         ChunkData chunkData = new ChunkData();
-
         Chunk[] chunks = column.getChunks();
-        int chunkSectionCount = chunks.length;
-        chunkData.sections = new ChunkSection[chunkSectionCount];
+        chunkData.sections = new ChunkSection[chunks.length];
 
-       CompoundTag[] blockEntities = column.getTileEntities();
-        for (int chunkY = 0; chunkY < chunkSectionCount; chunkY++) {
+        CompoundTag[] blockEntities = column.getTileEntities();
+        for (int chunkY = 0; chunkY < chunks.length; chunkY++) {
             chunkData.sections[chunkY] = new ChunkSection();
             Chunk chunk = chunks[chunkY];
 
@@ -64,22 +63,17 @@ public class ChunkUtils {
                 continue;
 
             ChunkSection section = chunkData.sections[chunkY];
-
             for (int x = 0; x < 16; x++) {
                 for (int y = 0; y < 16; y++) {
                     for (int z = 0; z < 16; z++) {
                         BlockState blockState = chunk.get(x, y, z);
                         BlockEntry block = TranslatorsInit.getBlockTranslator().getBlockEntry(blockState);
-                        section.getBlockStorageArray()[0].setFullBlock(ChunkSection.blockPosition(x, y, z),
-                        block.getBedrockRuntimeId());
-								
                         if (block.getJavaIdentifier().contains("sign[")) {
                             Position pos = new ChunkPosition(column.getX(), column.getZ()).getBlock(x, (chunkY << 4) + y, z);
                             chunkData.signs.put(block.getJavaId(), TranslatorsInit.getBlockEntityTranslators().get("Sign").getDefaultBedrockTag("Sign", pos.getX(), pos.getY(), pos.getZ()));
                         } else {
                             section.getBlockStorageArray()[0].setFullBlock(ChunkSection.blockPosition(x, y, z), block.getBedrockRuntimeId());
                         }
-
 
                         if (block.isWaterlogged()) {
                             BlockEntry water = TranslatorsInit.getBlockTranslator().getBlockEntry("minecraft:water[level=0]");
@@ -95,7 +89,7 @@ public class ChunkUtils {
             CompoundTag tag = blockEntities[i];
             String tagName;
             if (!tag.contains("id")) {
-              //  GeyserLogger.DEFAULT.debug("Got tag with no id: " + tag.getValue());
+            //    GeyserLogger.DEFAULT.debug("Got tag with no id: " + tag.getValue());
                 tagName = "Empty";
             } else {
                 tagName = (String) tag.get("id").getValue();
@@ -164,9 +158,7 @@ public class ChunkUtils {
 
     public static final class ChunkData {
         public ChunkSection[] sections;
-		
-	//    public byte[] biomes = new byte[256];
-		
+
         public com.nukkitx.nbt.tag.CompoundTag[] blockEntities = new com.nukkitx.nbt.tag.CompoundTag[0];
 
         public Int2ObjectMap<com.nukkitx.nbt.tag.CompoundTag> signs = new Int2ObjectOpenHashMap<>();
