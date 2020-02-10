@@ -55,6 +55,8 @@ public class JavaPlayerAbilitiesTranslator extends PacketTranslator<ServerPlayer
         playerFlags = setPlayerFlag(0x20, true, playerFlags); // auto jump
         playerFlags = setPlayerFlag(0x40, packet.isCanFly(), playerFlags); // can fly
         playerFlags = setPlayerFlag(0x200, packet.isFlying(), playerFlags); // is flying
+        playerFlags = setPlayerFlag(0x08, packet.isCreative(), playerFlags); // is creative (mey not be working)
+        playerFlags = setPlayerFlag(0x01, packet.isInvincible), playerFlags); // is Invincible (mey not be working)
 
         AdventureSettingsPacket adventureSettingsPacket = new AdventureSettingsPacket();
         adventureSettingsPacket.setPlayerPermission(1);
