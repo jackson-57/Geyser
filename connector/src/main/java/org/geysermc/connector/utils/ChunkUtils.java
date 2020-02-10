@@ -52,10 +52,11 @@ public class ChunkUtils {
     public static ChunkData translateToBedrock(Column column) {
         ChunkData chunkData = new ChunkData();
         Chunk[] chunks = column.getChunks();
-        chunkData.sections = new ChunkSection[chunks.length];
+        int chunkSectionCount = chunks.length;
+        chunkData.sections = new ChunkSection[chunkSectionCount];
 
         CompoundTag[] blockEntities = column.getTileEntities();
-        for (int chunkY = 0; chunkY < chunks.length; chunkY++) {
+        for (int chunkY = 0; chunkY < chunkSectionCount; chunkY++) {
             chunkData.sections[chunkY] = new ChunkSection();
             Chunk chunk = chunks[chunkY];
 
@@ -67,13 +68,14 @@ public class ChunkUtils {
                 for (int y = 0; y < 16; y++) {
                     for (int z = 0; z < 16; z++) {
                         BlockState blockState = chunk.get(x, y, z);
-                        BlockEntry block = TranslatorsInit.getBlockTranslator().getBlockEntry(blockState);
+                        BlockEntry block = TranslatorsInit.getBlockTranslator().getBlockEntry(blockState);					
                         if (block.getJavaIdentifier().contains("sign[")) {
                             Position pos = new ChunkPosition(column.getX(), column.getZ()).getBlock(x, (chunkY << 4) + y, z);
                             chunkData.signs.put(block.getJavaId(), TranslatorsInit.getBlockEntityTranslators().get("Sign").getDefaultBedrockTag("Sign", pos.getX(), pos.getY(), pos.getZ()));
                         } else {
-                            section.getBlockStorageArray()[0].setFullBlock(ChunkSection.blockPosition(x, y, z), block.getBedrockRuntimeId());
-                        }
+                        section.getBlockStorageArray()[0].setFullBlock(ChunkSection.blockPosition(x, y, z),
+                        block.getBedrockRuntimeId());
+						}
 
                         if (block.isWaterlogged()) {
                             BlockEntry water = TranslatorsInit.getBlockTranslator().getBlockEntry("minecraft:water[level=0]");
