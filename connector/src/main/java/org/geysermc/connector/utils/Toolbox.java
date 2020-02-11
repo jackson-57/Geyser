@@ -38,9 +38,8 @@ import com.nukkitx.protocol.bedrock.packet.StartGamePacket;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-
 import org.geysermc.connector.GeyserConnector;
-import org.geysermc.connector.network.translators.block.BlockEntry;
+import org.geysermc.connector.console.GeyserLogger;
 import org.geysermc.connector.network.translators.item.ItemEntry;
 
 import java.io.*;
@@ -48,16 +47,15 @@ import java.util.*;
 
 public class Toolbox {
 
+    public static final ObjectMapper JSON_MAPPER = new ObjectMapper().disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES);
+    public static final CompoundTag BIOMES;
+
     public static final Collection<StartGamePacket.ItemEntry> ITEMS = new ArrayList<>();
-    public static ListTag<CompoundTag> BLOCKS;
-    public static ItemData[] CREATIVE_ITEMS;
-    public static CompoundTag BIOMES;
 
     public static final Int2ObjectMap<ItemEntry> ITEM_ENTRIES = new Int2ObjectOpenHashMap<>();
-    public static final Int2ObjectMap<BlockEntry> BLOCK_ENTRIES = new Int2ObjectOpenHashMap<>();
-    public static final Map<String, BlockEntry> JAVA_IDENTIFIER_TO_BLOCK_ENTRY = new HashMap<>();
 
-    public static void init() {
+    static {
+        /* Load biomes */
         InputStream biomestream = GeyserConnector.class.getClassLoader().getResourceAsStream("bedrock/biome_definitions.dat");
         if (biomestream == null) {
             throw new AssertionError("Unable to find bedrock/biome_definitions.dat");
@@ -73,31 +71,13 @@ public class Toolbox {
             throw new AssertionError(ex);
         }
 
-        InputStream stream = GeyserConnector.class.getClassLoader().getResourceAsStream("bedrock/runtime_block_states.dat");
-        if (stream == null) {
-            throw new AssertionError("Unable to find bedrock/runtime_block_states.dat");
-        }
+        /* Load item palette */
+        InputStream stream = getResource("bedrock/items.json");
 
-        ListTag<CompoundTag> blocksTag;
+        TypeReference<List<JsonNode>> itemEntriesType = new TypeReference<List<JsonNode>>() {
+        };
 
-        NBTInputStream nbtInputStream = NbtUtils.createNetworkReader(stream);
-        try {
-            blocksTag = (ListTag<CompoundTag>) nbtInputStream.readTag();
-            nbtInputStream.close();
-        } catch (Exception ex) {
-            GeyserConnector.getInstance().getLogger().warning("Failed to get blocks from runtime block states, please report this error!");
-            throw new AssertionError(ex);
-        }
-
-        BLOCKS = blocksTag;
-
-        InputStream stream2 = Toolbox.class.getClassLoader().getResourceAsStream("bedrock/items.json");
-        if (stream2 == null) {
-            throw new AssertionError("Items Table not found");
-        }
-
-        ObjectMapper startGameItemMapper = new ObjectMapper();
-        List<Map> startGameItems = new ArrayList<>();
+        List<JsonNode> itemEntries;
         try {
             startGameItems = startGameItemMapper.readValue(stream2, ArrayList.class);
         } catch (Exception e) {
@@ -134,71 +114,7 @@ public class Toolbox {
             ex.printStackTrace();
         }
 
-        int javaIndex = -1;
-        javaLoop:
-        for (Map.Entry<String, Map<String, Object>> javaEntry : blocks.entrySet()) {
-            javaIndex++;
-            String wantedIdentifier = (String) javaEntry.getValue().get("bedrock_identifier");
-            Map<String, Object> wantedStates = (Map<String, Object>) javaEntry.getValue().get("bedrock_states");
-
-            int bedrockIndex = -1;
-            bedrockLoop:
-            for (CompoundTag bedrockEntry : BLOCKS.getValue()) {
-                bedrockIndex++;
-                CompoundTag blockTag = bedrockEntry.getAsCompound("block");
-                if (blockTag.getAsString("name").equals(wantedIdentifier)) {
-                    if (wantedStates != null) {
-                        Map<String, Tag<?>> bedrockStates = blockTag.getAsCompound("states").getValue();
-                        for (Map.Entry<String, Object> stateEntry : wantedStates.entrySet()) {
-                            Tag<?> bedrockStateTag = bedrockStates.get(stateEntry.getKey());
-                            if (bedrockStateTag == null)
-                                continue bedrockLoop;
-                            Object bedrockStateValue = bedrockStateTag.getValue();
-                            if (bedrockStateValue instanceof Byte)
-                                bedrockStateValue = ((Byte) bedrockStateValue) != 0;
-                            if (!stateEntry.getValue().equals(bedrockStateValue))
-                                continue bedrockLoop;
-                        }
-                    }
-                    BlockEntry blockEntry = new BlockEntry(javaEntry.getKey(), javaIndex, bedrockIndex);
-                    BLOCK_ENTRIES.put(javaIndex, blockEntry);
-                    JAVA_IDENTIFIER_TO_BLOCK_ENTRY.put(javaEntry.getKey(), blockEntry);
-                    continue javaLoop;
-                }
-            }
-            GeyserConnector.getInstance().getLogger().debug("Mapping " + javaEntry.getKey() + " was not found for bedrock edition!");
-        }
-
-        InputStream creativeItemStream = Toolbox.class.getClassLoader().getResourceAsStream("bedrock/creative_items.json");
-        ObjectMapper creativeItemMapper = new ObjectMapper();
-        JsonNode creativeItemEntries;
-
-        try {
-            creativeItemEntries = creativeItemMapper.readTree(creativeItemStream).get("items");
-        } catch (Exception e) {
-            throw new AssertionError("Unable to load creative items", e);
-        }
-
-        List<ItemData> creativeItems = new ArrayList<>();
-        for (JsonNode itemNode : creativeItemEntries) {
-            short damage = 0;
-            if (itemNode.has("damage")) {
-                damage = itemNode.get("damage").numberValue().shortValue();
-            }
-            if (itemNode.has("nbt_b64")) {
-                byte[] bytes = Base64.getDecoder().decode(itemNode.get("nbt_b64").asText());
-                ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-                try {
-                    com.nukkitx.nbt.tag.CompoundTag tag = (com.nukkitx.nbt.tag.CompoundTag) NbtUtils.createReaderLE(bais).readTag();
-                    creativeItems.add(ItemData.of(itemNode.get("id").asInt(), damage, 1, tag));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                creativeItems.add(ItemData.of(itemNode.get("id").asInt(), damage, 1));
-            }
-        }
-
-        CREATIVE_ITEMS = creativeItems.toArray(new ItemData[0]);
+    public static void init() {
+        // no-op
     }
 }
