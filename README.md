@@ -7,7 +7,7 @@
 [![Discord](https://img.shields.io/discord/613163671870242838.svg?color=%237289da&label=discord)](http://discord.geysermc.org/)
 [![HitCount](http://hits.dwyl.io/Geyser/GeyserMC.svg)](http://hits.dwyl.io/Geyser/GeyserMC)
 
-### this is custom version of geyser its not recemended to run on any other server then loyalty use it add own risk
+## Don't post bug reports in the Geyser discord or the Geyser repo. Use this at your own risk
 
 ## What is Geyser?
 Geyser is a proxy, bridging the gap between Minecraft: Bedrock Edition and Minecraft: Java Edition servers.
