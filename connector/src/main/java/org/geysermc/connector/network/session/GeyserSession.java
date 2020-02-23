@@ -114,8 +114,6 @@ public class GeyserSession implements CommandSender {
     @Setter
     private boolean jumping;
 
-    @Setter
-    private boolean switchingDimension = false;
     private final AtomicInteger pendingDimSwitches = new AtomicInteger(0);
     private boolean manyDimPackets = false;
     private ServerRespawnPacket lastDimPacket = null;
