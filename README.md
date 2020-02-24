@@ -14,7 +14,9 @@ Geyser is a proxy, bridging the gap between Minecraft: Bedrock Edition and Minec
 The ultimate goal of this project is to allow Minecraft: Bedrock Edition users to join Minecraft: Java Edition servers as seamlessly as possible.
 
 ## Download
-[Download (GitHub account required)](https://github.com/LoyaltyMC/Geyser/actions)
+[Download Latest Build](https://github.com/LoyaltyMC/Geyser/actions) (GitHub account required)
+
+You can also download the latest release [here](https://github.com/LoyaltyMC/Geyser/releases) (No account required) although it might not have the latest changes.
 
 ## Compiling
 1. Clone the repo to your computer
