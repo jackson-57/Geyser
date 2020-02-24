@@ -13,6 +13,12 @@
 Geyser is a proxy, bridging the gap between Minecraft: Bedrock Edition and Minecraft: Java Edition servers.
 The ultimate goal of this project is to allow Minecraft: Bedrock Edition users to join Minecraft: Java Edition servers as seamlessly as possible.
 
+## Compiling
+1. Clone the repo to your computer
+2. [Install Maven](https://maven.apache.org/install.html)
+3. Navigate to the Geyser root directory and run `git submodule update --init --recursive`. This downloads all the needed submodules for Geyser and is a crucial step in this process.
+4. Run `mvn clean install` and locate to the `target` folder.
+
 ## What's Left to be Added/Fixed
 - Sounds
 - Block Particles
