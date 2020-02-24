@@ -50,4 +50,4 @@ jobs:
         if: success()
         with:
           name: Geyser Velocity
-          path: bootstrap/velocity/Geyser-Velocity.jar
+          path: bootstrap\velocity\target\Geyser-Velocity.jar
