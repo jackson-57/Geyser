@@ -3,7 +3,7 @@
 [![forthebadge made-with-java](http://ForTheBadge.com/images/badges/made-with-java.svg)](https://java.com/)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Build Status](https://ci.nukkitx.com/job/Geyser/job/master/badge/icon)](https://ci.nukkitx.com/job/Geyser/job/master/)
+![Build on Push](https://github.com/LoyaltyMC/Geyser/workflows/Build%20on%20Push/badge.svg)
 [![Discord](https://img.shields.io/discord/613163671870242838.svg?color=%237289da&label=discord)](http://discord.geysermc.org/)
 [![HitCount](http://hits.dwyl.io/Geyser/GeyserMC.svg)](http://hits.dwyl.io/Geyser/GeyserMC)
 
@@ -12,6 +12,9 @@
 ## What is Geyser?
 Geyser is a proxy, bridging the gap between Minecraft: Bedrock Edition and Minecraft: Java Edition servers.
 The ultimate goal of this project is to allow Minecraft: Bedrock Edition users to join Minecraft: Java Edition servers as seamlessly as possible.
+
+## Download
+[Download (GitHub account required)](https://github.com/LoyaltyMC/Geyser/actions)
 
 ## Compiling
 1. Clone the repo to your computer
