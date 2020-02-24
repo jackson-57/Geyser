@@ -26,28 +26,28 @@ jobs:
         if: success()
         with:
           name: Geyser Standalone
-          path: target/Geyser.jar
+          path: bootstrap/standalone/target/Geyser.jar
       - name: Archive artifacts (Geyser Bukkit)
         uses: actions/upload-artifact@v1
         if: success()
         with:
           name: Geyser Bukkit
-          path: target/Geyser-Bukkit.jar
+          path: bootstrap/bukkit/target/Geyser-Bukkit.jar
       - name: Archive artifacts (Geyser BungeeCord)
         uses: actions/upload-artifact@v1
         if: success()
         with:
           name: Geyser BungeeCord
-          path: target/Geyser-BungeeCord.jar
+          path: bootstrap/bungeecord/target/Geyser-BungeeCord.jar
       - name: Archive artifacts (Geyser Sponge)
         uses: actions/upload-artifact@v1
         if: success()
         with:
           name: Geyser Sponge
-          path: target/Geyser-Sponge.jar
+          path: bootstrap/sponge/target/Geyser-Sponge.jar
       - name: Archive artifacts (Geyser Velocity)
         uses: actions/upload-artifact@v1
         if: success()
         with:
           name: Geyser Velocity
-          path: target/Geyser-Velocity.jar
+          path: bootstrap/bukkit/velocity/Geyser-Velocity.jar
