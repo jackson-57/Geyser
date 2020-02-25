@@ -3,7 +3,7 @@
 [![forthebadge made-with-java](http://ForTheBadge.com/images/badges/made-with-java.svg)](https://java.com/)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![Build on Push](https://github.com/LoyaltyMC/Geyser/workflows/Build%20on%20Push/badge.svg)
+[![Build on Push](https://github.com/LoyaltyMC/Geyser/workflows/Build%20on%20Push/badge.svg)](https://github.com/LoyaltyMC/Geyser/actions?query=workflow%3A%22Build+on+Push%22)
 [![Discord](https://img.shields.io/discord/613163671870242838.svg?color=%237289da&label=discord)](http://discord.geysermc.org/)
 [![HitCount](http://hits.dwyl.io/Geyser/GeyserMC.svg)](http://hits.dwyl.io/Geyser/GeyserMC)
 
