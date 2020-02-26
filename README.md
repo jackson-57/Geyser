@@ -10,7 +10,7 @@
 
 ## Don't post bug reports in the Geyser discord or the Geyser repo. Use this at your own risk
 
-### do to that it is hard to update this wont get big updates like last protocol lib and other things like movement and small fixes will be in it
+### Due to that it is hard to update this branch, it won't get big updates like the latest protocollib and other things like movement and small fixes will be in it
 
 ## What is Geyser?
 Geyser is a proxy, bridging the gap between Minecraft: Bedrock Edition and Minecraft: Java Edition servers.
