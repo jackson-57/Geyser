@@ -108,13 +108,15 @@ public class GeyserSession implements CommandSender {
     @Setter
     private GameMode gameMode = GameMode.SURVIVAL;
 
+    private final AtomicInteger pendingDimSwitches = new AtomicInteger(0);
     @Setter
     private boolean sprinting;
 
     @Setter
     private boolean jumping;
 
-    private final AtomicInteger pendingDimSwitches = new AtomicInteger(0);
+    @Setter
+    private boolean switchingDimension = false;
     private boolean manyDimPackets = false;
     private ServerRespawnPacket lastDimPacket = null;
 
