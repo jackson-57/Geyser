@@ -44,8 +44,7 @@ import com.nukkitx.nbt.tag.CompoundTag;
 import com.nukkitx.protocol.bedrock.BedrockServerSession;
 import com.nukkitx.protocol.bedrock.data.ContainerId;
 import com.nukkitx.protocol.bedrock.data.GamePublishSetting;
-import com.nukkitx.protocol.bedrock.data.GameRuleData;
-import com.nukkitx.protocol.bedrock.data.PlayerPermission;
+import com.nukkitx.protocol.bedrock.data.GameRule;
 import com.nukkitx.protocol.bedrock.packet.*;
 
 import lombok.Getter;
@@ -62,19 +61,19 @@ import org.geysermc.connector.network.session.auth.AuthData;
 import org.geysermc.connector.network.session.auth.BedrockClientData;
 import org.geysermc.connector.network.session.cache.*;
 import org.geysermc.connector.network.translators.Registry;
-import org.geysermc.connector.network.translators.block.BlockTranslator;
 import org.geysermc.connector.utils.ChunkUtils;
 import org.geysermc.connector.utils.Toolbox;
 import org.geysermc.floodgate.util.BedrockData;
 import org.geysermc.floodgate.util.EncryptionUtil;
 
+import java.io.InputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger; //override
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Getter
 public class GeyserSession implements CommandSender {
@@ -378,7 +377,7 @@ public class GeyserSession implements CommandSender {
         startGamePacket.setLightningLevel(0);
         startGamePacket.setMultiplayerGame(true);
         startGamePacket.setBroadcastingToLan(true);
-        startGamePacket.getGamerules().add(new GameRuleData<>("showcoordinates", true));
+        startGamePacket.getGamerules().add(new GameRule<>("showcoordinates", true));
         startGamePacket.setPlatformBroadcastMode(GamePublishSetting.PUBLIC);
         startGamePacket.setXblBroadcastMode(GamePublishSetting.PUBLIC);
         startGamePacket.setCommandsEnabled(true);
@@ -386,7 +385,7 @@ public class GeyserSession implements CommandSender {
         startGamePacket.setBonusChestEnabled(false);
         startGamePacket.setStartingWithMap(false);
         startGamePacket.setTrustingPlayers(true);
-        startGamePacket.setDefaultPlayerPermission(PlayerPermission.OPERATOR);
+        startGamePacket.setDefaultPlayerPermission(1);
         startGamePacket.setServerChunkTickRange(4);
         startGamePacket.setBehaviorPackLocked(false);
         startGamePacket.setResourcePackLocked(false);
